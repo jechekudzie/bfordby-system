@@ -18,7 +18,10 @@ class Student extends Model
         'date_of_birth',
         'gender_id',
         'enrollment_date',
-        'status'
+        'status',
+        'title_id',
+        'student_number',
+        'slug'
     ];
 
     //softDeletes
@@ -27,6 +30,11 @@ class Student extends Model
     public function gender()
     {
         return $this->belongsTo(Gender::class);
+    }
+
+    public function title()
+    {
+        return $this->belongsTo(Title::class);
     }
 
     public function contacts()
@@ -73,6 +81,27 @@ class Student extends Model
     {
         return $this->hasMany(StudentPayment::class);
     }
+
+    public function studentDisciplinary()
+    {
+        return $this->hasMany(StudentDisciplinary::class);
+    }
+
+   //Attendance
+   public function attendance()
+   {
+    return $this->hasMany(Attendance::class);
+   }
+
+   //student health
+   public function studentHealth()
+   {
+    return $this->hasMany(StudentHealth::class);
+   }
+
+
+
+ 
 
     public function getSlugOptions() : SlugOptions
     {

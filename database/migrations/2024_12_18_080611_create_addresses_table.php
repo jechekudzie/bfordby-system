@@ -17,10 +17,10 @@ return new class extends Migration
             $table->unsignedBigInteger('address_type_id');
             $table->string('address_line1');
             $table->string('address_line2')->nullable();
-            $table->string('city');
-            $table->string('state');
-            $table->string('zip_code');
-            $table->unsignedBigInteger('country_id');
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('zip_code')->nullable();
+            $table->unsignedBigInteger('country_id')->nullable();
             $table->boolean('is_primary')->default(false);
             $table->string('slug')->unique();
             $table->softDeletes();

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_health', function (Blueprint $table) {
+        Schema::create('student_healths', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id')->unique();
             $table->string('blood_group')->nullable();

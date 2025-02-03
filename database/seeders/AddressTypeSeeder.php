@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\AddressType;
 class AddressTypeSeeder extends Seeder
 {
     public function run()
@@ -16,6 +16,8 @@ class AddressTypeSeeder extends Seeder
             ['name' => 'Guardian Address', 'description' => 'Address of guardian', 'created_at' => now()],
         ];
 
-        DB::table('address_types')->insert($types);
+       foreach ($types as $type) {
+        AddressType::create($type);
+       }
     }
 }

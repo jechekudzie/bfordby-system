@@ -16,13 +16,12 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id');
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('relationship');
+            $table->string('relationship')->nullable();
             $table->text('contact_details')->nullable();
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();
-        
-            $table->foreign('student_id')->references('id')->on('students');
+    
         });
         
     }

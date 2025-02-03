@@ -13,17 +13,19 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('title_id')->nullable();
             $table->string('first_name');
             $table->string('middle_name')->nullable();
             $table->string('last_name');
+            $table->string('student_number')->unique()->nullable();
             $table->date('date_of_birth')->nullable();
-            $table->unsignedBigInteger('gender_id');
+            $table->unsignedBigInteger('gender_id')->nullable();
             $table->date('enrollment_date')->nullable();
-            $table->enum('status', ['active', 'graduated', 'inactive', 'withdrawn']);
+            $table->enum('status', ['pending', 'active', 'graduated', 'inactive', 'withdrawn']);
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('gender_id')->references('id')->on('genders');
+           
         });
         
     }

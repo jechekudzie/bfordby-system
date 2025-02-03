@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
 use App\Models\Student;
 use App\Models\Gender;
 use App\Models\Course;
+use App\Models\Title;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,8 +16,8 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $students = Student::with(['gender', 'contacts', 'addresses'])->paginate(10);
-        return view('admin.students.index', compact('students'));
+        $students = Student::with(['gender', 'contacts', 'addresses', 'title'])->get();
+        return view('students.index', compact('students'));
     }
 
     /**
@@ -27,8 +26,9 @@ class StudentController extends Controller
     public function create()
     {
         $genders = Gender::all();
+        $titles = Title::all();
         $courses = Course::all();
-        return view('admin.students.create', compact('genders', 'courses'));
+        return view('students.create', compact('genders', 'titles', 'courses'));
     }
 
     /**
@@ -37,27 +37,28 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'title_id' => 'nullable|exists:titles,id',
             'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'date_of_birth' => 'required|date',
             'gender_id' => 'required|exists:genders,id',
-            'email' => 'required|email|unique:students,email',
-            'phone' => 'nullable|string|max:25',
             'enrollment_date' => 'required|date',
-            'status' => 'required|in:active,inactive,graduated,withdrawn',
-            'course_id' => 'required|exists:courses,id',
+            'status' => 'required|in:pending,active,inactive,graduated,withdrawn',
+        
         ]);
 
         DB::beginTransaction();
         try {
+            // Slug is automatically created via Spatie's HasSlug
             $student = Student::create($validated);
 
             DB::commit();
-            return redirect()->route('admin.students.show', $student)
-                             ->with('success', 'Student created successfully.');
+            return redirect()->route('students.show', $student->slug)
+                             ->with('success', 'Student enrolled successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error creating student: ' . $e->getMessage());
+            return back()->with('error', 'Error enrolling student: ' . $e->getMessage());
         }
     }
 
@@ -67,17 +68,19 @@ class StudentController extends Controller
     public function show(Student $student)
     {
         $student->load([
-            'gender', 
-            'contacts.contactType', 
+            'title',
+            'gender',
+            'contacts.contactType',
             'addresses.addressType',
             'guardians',
             'academicHistories',
-            'studentCourses.course',
-            'scholarships'
+            'scholarships',
+            'studentCourses.course.qualificationLevel.qualificationLevelType'
         ]);
-        
-        return view('admin.students.show', compact('student'));
+    
+        return view('students.show', compact('student'));
     }
+    
 
     /**
      * Show form for editing the specified student
@@ -85,8 +88,10 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         $genders = Gender::all();
+        $titles = Title::all();
+        $courses = Course::all();
         $student->load(['contacts', 'addresses', 'guardians']);
-        return view('admin.students.edit', compact('student', 'genders'));
+        return view('students.edit', compact('student', 'genders', 'titles', 'courses'));
     }
 
     /**
@@ -95,36 +100,22 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
     {
         $validated = $request->validate([
+            'title_id' => 'nullable|exists:titles,id',
             'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'date_of_birth' => 'required|date',
             'gender_id' => 'required|exists:genders,id',
             'enrollment_date' => 'required|date',
-            'status' => 'required|in:active,inactive,graduated,withdrawn'
+            'status' => 'required|in:pending,active,inactive,graduated,withdrawn'
         ]);
 
         DB::beginTransaction();
         try {
             $student->update($validated);
 
-            // Update contacts
-            if ($request->has('contacts')) {
-                $student->contacts()->delete(); // Remove old contacts
-                foreach ($request->contacts as $contact) {
-                    $student->contacts()->create($contact);
-                }
-            }
-
-            // Update addresses
-            if ($request->has('addresses')) {
-                $student->addresses()->delete(); // Remove old addresses
-                foreach ($request->addresses as $address) {
-                    $student->addresses()->create($address);
-                }
-            }
-
             DB::commit();
-            return redirect()->route('students.show', $student)
+            return redirect()->route('students.show', $student->slug)
                            ->with('success', 'Student updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -144,17 +135,5 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error deleting student: ' . $e->getMessage());
         }
-    }
-
-    public function getSemesters(Student $student)
-    {
-        $semesters = $student->availableSemesters();
-        $periodName = $student->getCurrentPeriodName();
-        
-        return response()->json([
-            'semesters' => $semesters,
-            'period_type' => $periodName,
-            'study_mode' => $student->course->study_mode
-        ]);
     }
 }

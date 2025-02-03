@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('course_id');
             $table->date('enrollment_date');
             $table->date('completion_date')->nullable();
-            $table->enum('status', ['enrolled', 'completed', 'withdrawn', 'deferred'])->default('enrolled');
+            $table->enum('status', ['pending', 'enrolled', 'completed', 'withdrawn', 'deferred'])->default('pending');
             $table->text('notes')->nullable();
             $table->string('slug')->unique();
             $table->timestamps();

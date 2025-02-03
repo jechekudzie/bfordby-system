@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Semester;
 use Carbon\Carbon;
 
 class SemesterSeeder extends Seeder
@@ -78,6 +78,11 @@ class SemesterSeeder extends Seeder
             ],
         ];
 
-        DB::table('semesters')->insert($semesters);
+       foreach ($semesters as $semester) {
+        Semester::create($semester);
+       }
+
+
+
     }
 }

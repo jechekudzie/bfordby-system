@@ -15,12 +15,15 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('subject_id');
-            $table->string('grade')->nullable();
-            $table->string('semester');
-            $table->year('academic_year');
+            $table->unsignedBigInteger('semester_id');
+            $table->integer('academic_year');
+            $table->decimal('grade', 5, 2)->nullable();
+            $table->enum('status', ['enrolled', 'completed', 'failed', 'dropped'])->default('enrolled');
+            $table->text('notes')->nullable();
+            $table->string('slug')->unique();
             $table->timestamps();
+            $table->softDeletes();
 
-        
         });
     }
 
@@ -31,4 +34,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('student_subjects');
     }
-}; 
+};

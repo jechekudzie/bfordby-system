@@ -45,7 +45,7 @@ class Address extends Model
     public function getSlugOptions() : SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom(['address_line1', 'address_line2', 'city', 'state', 'zip_code', 'country_id'])
+            ->generateSlugsFrom(['address_line1', 'country_id'])
             ->saveSlugsTo('slug');
     }
 

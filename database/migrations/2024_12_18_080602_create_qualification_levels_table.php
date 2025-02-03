@@ -3,7 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
+use App\Models\QualificationLevel;
+
 return new class extends Migration
 {
     /**
@@ -14,51 +15,47 @@ return new class extends Migration
         Schema::create('qualification_levels', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('code', 10)->unique();
             $table->string('description')->nullable();
-            $table->integer('level_order')->unique(); // For sorting qualifications by level
+            $table->string('slug')->unique();
             $table->timestamps();
+            $table->softDeletes();
         });
 
-        // Insert default qualification levels
-        DB::table('qualification_levels')->insert([
-            [
-                'name' => 'Secondary School',
-                'code' => 'SECOND',
-                'description' => 'Secondary School Education',
-                'level_order' => 1
-            ],
-            [
-                'name' => 'High School',
-                'code' => 'HIGH',
-                'description' => 'High School Education',
-                'level_order' => 2
-            ],
+        // Create qualification levels using the model
+        $qualificationLevels = [
             [
                 'name' => 'Certificate',
-                'code' => 'CERT',
-                'description' => 'Certificate Level',
-                'level_order' => 3
+                'description' => 'Certificate level qualification'
             ],
             [
                 'name' => 'Diploma',
-                'code' => 'DIP',
-                'description' => 'Diploma Level',
-                'level_order' => 4
+                'description' => 'Diploma level qualification'
             ],
             [
                 'name' => 'Advanced Diploma',
-                'code' => 'ADIP',
-                'description' => 'Advanced Diploma Level',
-                'level_order' => 5
+                'description' => 'Advanced Diploma level qualification'
             ],
             [
                 'name' => "Bachelor's Degree",
-                'code' => 'BACH',
-                'description' => 'Bachelor Degree Level',
-                'level_order' => 6
+                'description' => 'Undergraduate degree level qualification'
+            ],
+            [
+                'name' => "Master's Degree",
+                'description' => 'Postgraduate degree level qualification'
+            ],
+            [
+                'name' => 'Doctorate',
+                'description' => 'Doctoral level qualification'
+            ],
+            [
+                'name' => 'Professional Certification',
+                'description' => 'Industry-specific professional certification'
             ]
-        ]);
+        ];
+
+        foreach ($qualificationLevels as $level) {
+            QualificationLevel::create($level);
+        }
     }
 
     /**

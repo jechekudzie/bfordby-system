@@ -13,7 +13,8 @@ class Country extends Model
     protected $fillable = [
         'name',
         'code',
-        'phone_code'
+        'phone_code',
+        'slug'
     ];
 
     //softDeletes
@@ -22,6 +23,11 @@ class Country extends Model
     public function addresses()
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class);
     }
 
     //slug

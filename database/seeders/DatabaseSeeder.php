@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             GenderSeeder::class,
             ContactTypeSeeder::class,
             AddressTypeSeeder::class,
+            TitleSeeder::class,
         ]);
 
         // Then seed main tables in order of dependencies

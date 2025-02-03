@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Guardian;
 use App\Models\Student;
+use App\Models\Guardian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class GuardianController extends Controller
 {
@@ -14,26 +15,28 @@ class GuardianController extends Controller
         return view('guardians.index', compact('guardians'));
     }
 
-    public function create()
+    public function create(Student $student)
     {
-        $students = Student::all();
-        return view('guardians.create', compact('students'));
+        return view('students.guardians.create', compact('student'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Student $student)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'relationship' => 'required|string|max:255',
-            'contact_details' => 'required|string'
+            'relationship' => 'nullable|string|max:255',
+            'contact_details' => 'nullable|string'
         ]);
 
-        Guardian::create($validated);
+        $guardian = new Guardian($validated);
+        $guardian->student_id = $student->id;
+        $guardian->slug = Str::slug($student->name . '-' . $validated['first_name'] . '-' . $validated['last_name'] . '-' . uniqid());
+        $guardian->save();
 
-        return redirect()->route('guardians.index')
-                        ->with('success', 'Guardian created successfully.');
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', 'Guardian added successfully');
     }
 
     public function show(Guardian $guardian)
@@ -41,32 +44,33 @@ class GuardianController extends Controller
         return view('guardians.show', compact('guardian'));
     }
 
-    public function edit(Guardian $guardian)
+    public function edit(Student $student, Guardian $guardian)
     {
-        $students = Student::all();
-        return view('guardians.edit', compact('guardian', 'students'));
+        return view('students.guardians.edit', compact('student', 'guardian'));
     }
 
-    public function update(Request $request, Guardian $guardian)
+    public function update(Request $request, Student $student, Guardian $guardian)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'relationship' => 'required|string|max:255',
-            'contact_details' => 'required|string'
+            'relationship' => 'nullable|string|max:255',
+            'contact_details' => 'nullable|string'
         ]);
 
         $guardian->update($validated);
 
-        return redirect()->route('guardians.index')
-                        ->with('success', 'Guardian updated successfully.');
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', 'Guardian updated successfully');
     }
 
-    public function destroy(Guardian $guardian)
+    public function destroy(Student $student, Guardian $guardian)
     {
         $guardian->delete();
-        return redirect()->route('guardians.index')
-                        ->with('success', 'Guardian deleted successfully.');
+
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', 'Guardian deleted successfully');
     }
 }

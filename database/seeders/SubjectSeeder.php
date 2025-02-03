@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Subject;
 class SubjectSeeder extends Seeder
 {
     public function run()
@@ -99,6 +99,9 @@ class SubjectSeeder extends Seeder
             ],
         ];
 
-        DB::table('subjects')->insert($subjects);
+
+        foreach ($subjects as $subject) {
+            Subject::create($subject);
+        }
     }
 }

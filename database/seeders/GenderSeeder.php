@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Gender;
 
 class GenderSeeder extends Seeder
 {
@@ -15,6 +15,8 @@ class GenderSeeder extends Seeder
             ['name' => 'Other', 'created_at' => now()],
         ];
 
-        DB::table('genders')->insert($genders);
+        foreach ($genders as $gender) {
+            Gender::create($gender);
+        }
     }
 }

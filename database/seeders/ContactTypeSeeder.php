@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+    use Illuminate\Database\Seeder;
+    use Illuminate\Support\Facades\DB;
+    use App\Models\ContactType;
 
 class ContactTypeSeeder extends Seeder
 {
@@ -17,6 +18,8 @@ class ContactTypeSeeder extends Seeder
             ['name' => 'Emergency Contact', 'description' => 'Emergency contact number', 'created_at' => now()],
         ];
 
-        DB::table('contact_types')->insert($types);
+       foreach ($types as $type) {
+        ContactType::create($type);
+       }
     }
 }

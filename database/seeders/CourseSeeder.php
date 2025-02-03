@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Course;
 
 class CourseSeeder extends Seeder
 {
@@ -24,6 +25,8 @@ class CourseSeeder extends Seeder
             ],
         ];
 
-        DB::table('courses')->insert($courses);
+       foreach ($courses as $course) {
+        Course::create($course);
+       }
     }
 }
