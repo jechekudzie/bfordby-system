@@ -18,9 +18,9 @@ return new class extends Migration
             $table->json('allergies')->nullable();
             $table->json('medical_conditions')->nullable();
             $table->json('medications')->nullable();
-            $table->string('emergency_contact_name');
-            $table->string('emergency_contact_phone');
-            $table->string('emergency_contact_relationship');
+            $table->string('emergency_contact_name')->nullable();
+            $table->string('emergency_contact_phone')->nullable();
+            $table->string('emergency_contact_relationship')->nullable();
             $table->string('insurance_provider')->nullable();
             $table->string('insurance_number')->nullable();
             $table->date('last_checkup_date')->nullable();

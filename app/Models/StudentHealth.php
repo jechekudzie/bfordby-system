@@ -10,7 +10,6 @@ class StudentHealth extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'student_id',
         'blood_group',
         'allergies',
         'medical_conditions',
@@ -18,20 +17,12 @@ class StudentHealth extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'emergency_contact_relationship',
-        'insurance_provider',
-        'insurance_number',
         'last_checkup_date',
         'notes'
     ];
 
-    protected $dates = [
-        'last_checkup_date'
-    ];
-
     protected $casts = [
-        'allergies' => 'array',
-        'medical_conditions' => 'array',
-        'medications' => 'array'
+        'last_checkup_date' => 'date',
     ];
 
     public function student()

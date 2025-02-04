@@ -18,15 +18,13 @@ return new class extends Migration
             $table->string('number')->unique();
             $table->date('issue_date')->nullable();
             $table->date('expiry_date')->nullable();
-            $table->string('issuing_authority');
-            $table->unsignedBigInteger('issuing_country_id');
-            $table->string('document_path')->nullable();
+            $table->string('issuing_authority')->nullable();
+            $table->unsignedBigInteger('issuing_country_id')->nullable();
+            $table->string('document')->nullable();
             $table->enum('status', ['active', 'expired', 'pending_verification'])->default('pending_verification');
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-        
         });
     }
 

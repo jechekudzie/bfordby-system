@@ -48,7 +48,7 @@ class AcademicHistory extends Model
     public function getSlugOptions() : SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom(['student_id', 'qualification_level_id', 'program_name'])
+            ->generateSlugsFrom(['student_id', 'qualification_level_id'])
             ->saveSlugsTo('slug');
     }
 

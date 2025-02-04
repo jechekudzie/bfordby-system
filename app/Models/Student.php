@@ -82,7 +82,7 @@ class Student extends Model
         return $this->hasMany(StudentPayment::class);
     }
 
-    public function studentDisciplinary()
+    public function disciplinaries()
     {
         return $this->hasMany(StudentDisciplinary::class);
     }
@@ -96,7 +96,7 @@ class Student extends Model
    //student health
    public function studentHealth()
    {
-    return $this->hasMany(StudentHealth::class);
+    return $this->hasOne(StudentHealth::class);
    }
 
 

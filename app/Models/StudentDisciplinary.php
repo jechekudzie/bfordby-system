@@ -39,4 +39,32 @@ class StudentDisciplinary extends Model
     {
         return $this->belongsTo(Student::class);
     }
+
+    public const INCIDENT_TYPES = [
+        'academic_misconduct' => 'Academic Misconduct',
+        'behavioral_misconduct' => 'Behavioral Misconduct',
+        'attendance_issues' => 'Attendance Issues',
+        'bullying' => 'Bullying',
+        'vandalism' => 'Vandalism',
+        'substance_abuse' => 'Substance Abuse',
+        'other' => 'Other'
+    ];
+
+    public const SANCTIONS = [
+        'verbal_warning' => 'Verbal Warning',
+        'written_warning' => 'Written Warning',
+        'detention' => 'Detention',
+        'suspension' => 'Suspension',
+        'probation' => 'Probation',
+        'expulsion' => 'Expulsion',
+        'community_service' => 'Community Service',
+        'other' => 'Other'
+    ];
+
+    public const STATUSES = [
+        'pending',
+        'active',
+        'resolved',
+        'appealed'
+    ];
 } 

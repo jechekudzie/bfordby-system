@@ -189,13 +189,13 @@ Route::prefix('student')->group(function () {
 
 
     //student disciplinary
-    Route::get('students/{student}/disciplinary', [\App\Http\Controllers\StudentDisciplinaryController::class, 'index'])->name('students.disciplinary.index');
-    Route::get('students/{student}/disciplinary/create', [\App\Http\Controllers\StudentDisciplinaryController::class, 'create'])->name('students.disciplinary.create');
-    Route::post('students/{student}/disciplinary', [\App\Http\Controllers\StudentDisciplinaryController::class, 'store'])->name('students.disciplinary.store');
-    Route::get('students/{student}/disciplinary/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'show'])->name('students.disciplinary.show');
-    Route::get('students/{student}/disciplinary/{disciplinary}/edit', [\App\Http\Controllers\StudentDisciplinaryController::class, 'edit'])->name('students.disciplinary.edit');
-    Route::put('students/{student}/disciplinary/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'update'])->name('students.disciplinary.update');
-    Route::delete('students/{student}/disciplinary/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'destroy'])->name('students.disciplinary.destroy');
+    Route::get('students/{student}/disciplinaries', [\App\Http\Controllers\StudentDisciplinaryController::class, 'index'])->name('students.disciplinaries.index');
+    Route::get('students/{student}/disciplinaries/create', [\App\Http\Controllers\StudentDisciplinaryController::class, 'create'])->name('students.disciplinaries.create');
+    Route::post('students/{student}/disciplinaries', [\App\Http\Controllers\StudentDisciplinaryController::class, 'store'])->name('students.disciplinaries.store');
+    Route::get('students/{student}/disciplinaries/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'show'])->name('students.disciplinaries.show');
+    Route::get('students/{student}/disciplinaries/{disciplinary}/edit', [\App\Http\Controllers\StudentDisciplinaryController::class, 'edit'])->name('students.disciplinaries.edit');
+    Route::put('students/{student}/disciplinaries/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'update'])->name('students.disciplinaries.update');
+    Route::delete('students/{student}/disciplinaries/{disciplinary}', [\App\Http\Controllers\StudentDisciplinaryController::class, 'destroy'])->name('students.disciplinaries.destroy');
 
 
     //student health
