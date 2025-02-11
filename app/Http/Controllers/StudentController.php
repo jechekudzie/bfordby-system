@@ -73,9 +73,11 @@ class StudentController extends Controller
             'contacts.contactType',
             'addresses.addressType',
             'guardians',
+            'enrollments.course',
+            'enrollments.studyMode',
+            'enrollments.enrollmentCode',
             'academicHistories',
-            'scholarships',
-            'studentCourses.course.qualificationLevel.qualificationLevelType'
+            'scholarships'
         ]);
     
         return view('students.show', compact('student'));

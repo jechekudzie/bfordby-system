@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('assessments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('subject_id');
+            $table->unsignedBigInteger('module_id');
             $table->string('name');
             $table->text('description')->nullable();
             $table->enum('type', ['assignment', 'test', 'exam', 'practical', 'theory']);
             $table->decimal('max_score', 5, 2);
-            $table->date('due_date');
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->string('slug')->unique();
             $table->timestamps();
@@ -26,6 +25,7 @@ return new class extends Migration
 
         
         });
+        
     }
 
     /**

@@ -35,9 +35,9 @@ class Subject extends Model
         return $this->belongsTo(Course::class);
     }
 
-    public function assessments()
+    public function modules()
     {
-        return $this->hasMany(Assessment::class);
+        return $this->hasMany(Module::class);
     }
 
     public function students()

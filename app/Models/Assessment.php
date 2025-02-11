@@ -9,32 +9,22 @@ use Spatie\Sluggable\SlugOptions;
 
 class Assessment extends Model
 {
-    use SoftDeletes;
-    use HasSlug;
-    
+    use SoftDeletes, HasSlug;
+
     protected $fillable = [
-        'subject_id',
-        'name',
-        'description',
-        'type',
-        'max_score',
-        'due_date',
-        'status',
-        'slug'
+        'module_id', 'name', 'description', 'type', 'max_score', 'status', 'slug'
     ];
 
-    protected $dates = [
-        'due_date'
-    ];
+    protected $dates = ['due_date'];
 
-    public function subject()
+    public function module()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Module::class);
     }
 
-    public function studentAssessments()
+    public function allocations()
     {
-        return $this->hasMany(StudentAssessment::class);
+        return $this->hasMany(AssessmentAllocation::class);
     }
 
     public function getSlugOptions() : SlugOptions
@@ -48,5 +38,4 @@ class Assessment extends Model
     {
         return 'slug';
     }
-
 }

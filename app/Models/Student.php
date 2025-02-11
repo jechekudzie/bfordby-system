@@ -72,11 +72,6 @@ class Student extends Model
         return $this->hasMany(AcademicHistory::class);
     }
 
-    public function studentCourses()
-    {
-        return $this->hasMany(StudentCourse::class);
-    }
-
     public function studentPayments()
     {
         return $this->hasMany(StudentPayment::class);
@@ -99,6 +94,16 @@ class Student extends Model
     return $this->hasOne(StudentHealth::class);
    }
 
+
+   public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'enrollments');
+    }
 
 
  

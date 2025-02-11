@@ -62,6 +62,8 @@
     <link href="{{ asset('vendors/leaflet.markercluster/MarkerCluster.css') }}" rel="stylesheet">
     <link href="{{ asset('vendors/leaflet.markercluster/MarkerCluster.Default.css') }}" rel="stylesheet">
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
     @stack('head')
 </head>
@@ -371,19 +373,34 @@
 
         <!-- Main Content -->
         <div class="container-fluid mt-5 pt-4">
-            @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
+           
 
-            @if (session('error'))
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible mb-4">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <h6 class="mb-0">Please correct the following errors:</h6>
+                </div>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+            @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i> {{ session('error') }}
+                <div class="d-flex">
+                    <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                    <div>
+                        {{ session('error') }}
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            @endif
+        @endif
 
             @yield('content')
         </div>
@@ -423,6 +440,13 @@
 
     <!-- Add Flatpickr JS -->
     <script src="{{ asset('vendors/flatpickr/flatpickr.min.js') }}"></script>
+
+    <!-- jQuery (if not already included) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
     @stack('scripts')
 

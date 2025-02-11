@@ -2,100 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Assessment;
+use App\Models\Course;
 use App\Models\Subject;
-use App\Models\Student;
+use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AssessmentController extends Controller
 {
-    public function index()
+    public function index(Subject $subject, Module $module)
     {
-        $assessments = Assessment::with(['subject', 'student'])->paginate(10);
-        return view('assessments.index', compact('assessments'));
+        
+        $assessments = Assessment::where('module_id', $module->id)
+            ->latest()
+            ->paginate(10);
+
+        $course = $subject->course;
+
+        return view('admin.assessments.index', compact('assessments', 'course', 'subject', 'module'));
     }
 
-    public function create()
+    public function create(Subject $subject, Module $module)
     {
-        $subjects = Subject::all();
-        $students = Student::all();
-        return view('assessments.create', compact('subjects', 'students'));
+    
+        $course = $subject->course;
+
+        return view('admin.assessments.create', compact('course', 'subject', 'module'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Course $course, Subject $subject, Module $module)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:assignment,test,exam',
-            'max_score' => 'required|integer|min:0',
-            'subject_id' => 'required|exists:subjects,id',
-            'student_id' => 'required|exists:students,id',
-            'score' => 'nullable|integer|min:0|max:' . $request->max_score
+            'description' => 'nullable|string',
+            'type' => 'required|in:assignment,test,exam,practical,theory',
+            'max_score' => 'required|numeric|min:0|max:100',
+            'status' => 'required|in:draft,published,archived'
         ]);
+
+        $validated['module_id'] = $module->id;
+        $validated['slug'] = Str::slug($request->name) . '-' . Str::random(8);
 
         Assessment::create($validated);
 
-        return redirect()->route('assessments.index')
-                        ->with('success', 'Assessment created successfully.');
+        return redirect()
+            ->route('admin.courses.subjects.modules.assessments.index', [$subject->slug, $module])
+            ->with('success', 'Assessment created successfully.');
     }
 
-    public function show(Assessment $assessment)
+    public function edit(Subject $subject, Module $module, Assessment $assessment)
     {
-        $assessment->load(['subject', 'student']);
-        return view('assessments.show', compact('assessment'));
+        $course = $subject->course;
+
+        return view('admin.assessments.edit', compact('course', 'subject', 'module', 'assessment'));
     }
 
-    public function edit(Assessment $assessment)
-    {
-        $subjects = Subject::all();
-        $students = Student::all();
-        return view('assessments.edit', compact('assessment', 'subjects', 'students'));
-    }
-
-    public function update(Request $request, Assessment $assessment)
+    public function update(Request $request, Course $course, Subject $subject, Module $module, Assessment $assessment)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:assignment,test,exam',
-            'max_score' => 'required|integer|min:0',
-            'subject_id' => 'required|exists:subjects,id',
-            'student_id' => 'required|exists:students,id',
-            'score' => 'nullable|integer|min:0|max:' . $request->max_score
+            'description' => 'nullable|string',
+            'type' => 'required|in:assignment,test,exam,practical,theory',
+            'max_score' => 'required|numeric|min:0|max:100',
+            'status' => 'required|in:draft,published,archived'
         ]);
 
         $assessment->update($validated);
 
-        return redirect()->route('assessments.index')
-                        ->with('success', 'Assessment updated successfully.');
+        return redirect()
+            ->route('admin.courses.subjects.modules.assessments.index', [$subject->slug, $module])
+            ->with('success', 'Assessment updated successfully.');
     }
 
-    public function destroy(Assessment $assessment)
+    public function destroy(Subject $subject, Module $module, Assessment $assessment)
     {
         $assessment->delete();
-        return redirect()->route('assessments.index')
-                        ->with('success', 'Assessment deleted successfully.');
-    }
 
-    // Additional method for bulk score entry
-    public function bulkScoreEntry(Request $request)
-    {
-        if ($request->isMethod('post')) {
-            $validated = $request->validate([
-                'scores' => 'required|array',
-                'scores.*' => 'required|integer|min:0'
-            ]);
-
-            foreach ($validated['scores'] as $assessmentId => $score) {
-                Assessment::where('id', $assessmentId)->update(['score' => $score]);
-            }
-
-            return redirect()->back()->with('success', 'Scores updated successfully.');
-        }
-
-        $assessments = Assessment::whereNull('score')
-                               ->with(['subject', 'student'])
-                               ->paginate(20);
-        
-        return view('assessments.bulk-score', compact('assessments'));
+        return redirect()
+            ->route('admin.courses.subjects.modules.assessments.index', [$subject->slug, $module])
+            ->with('success', 'Assessment deleted successfully.');
     }
 }

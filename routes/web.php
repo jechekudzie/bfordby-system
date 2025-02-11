@@ -4,6 +4,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\StudentEnrollmentController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\AssessmentAllocationController;
 
 Route::get('/', function () {
     return view('index');
@@ -15,7 +19,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard'); // Admin dashboard
 
-   
+
     // Academic Routes
     Route::get('courses', [\App\Http\Controllers\CourseController::class, 'index'])->name('courses.index');
     Route::get('courses/create', [\App\Http\Controllers\CourseController::class, 'create'])->name('courses.create');
@@ -25,20 +29,63 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('courses/{course}', [\App\Http\Controllers\CourseController::class, 'update'])->name('courses.update');
     Route::delete('courses/{course}', [\App\Http\Controllers\CourseController::class, 'destroy'])->name('courses.destroy');
 
-    // Subjects Routes
-    Route::get('subjects', [\App\Http\Controllers\SubjectController::class, 'index'])->name('subjects.index');
-    Route::get('subjects/create', [\App\Http\Controllers\SubjectController::class, 'create'])->name('subjects.create');
-    Route::post('subjects', [\App\Http\Controllers\SubjectController::class, 'store'])->name('subjects.store');
-    Route::get('subjects/{subject}', [\App\Http\Controllers\SubjectController::class, 'show'])->name('subjects.show');
-    Route::get('subjects/{subject}/edit', [\App\Http\Controllers\SubjectController::class, 'edit'])->name('subjects.edit');
-    Route::put('subjects/{subject}', [\App\Http\Controllers\SubjectController::class, 'update'])->name('subjects.update');
-    Route::delete('subjects/{subject}', [\App\Http\Controllers\SubjectController::class, 'destroy'])->name('subjects.destroy');
+    // Course -> Subject -> Module -> Assessment hierarchy
+    // Subjects
+    Route::get('subjects/{course}', [SubjectController::class, 'index'])
+        ->name('courses.subjects.index');
+    Route::get('subjects/{course}/create', [SubjectController::class, 'create'])
+        ->name('courses.subjects.create');
+    Route::post('subjects/{course}', [SubjectController::class, 'store'])
+        ->name('courses.subjects.store');
+    Route::get('subjects/{course}/{subject}/edit', [SubjectController::class, 'edit'])
+        ->name('courses.subjects.edit');
+    Route::put('subjects/{course}/{subject}', [SubjectController::class, 'update'])
+        ->name('courses.subjects.update');
+    Route::delete('subjects/{course}/{subject}', [SubjectController::class, 'destroy'])
+        ->name('courses.subjects.destroy');
 
+    // Modules (nested under subjects)
+    Route::get('subjects/{subject}/modules', [ModuleController::class, 'index'])
+        ->name('courses.subjects.modules.index');
+    Route::get('subjects/{subject}/modules/create', [ModuleController::class, 'create'])
+        ->name('courses.subjects.modules.create');
+    Route::post('subjects/{subject}/modules', [ModuleController::class, 'store'])
+        ->name('courses.subjects.modules.store');
+    Route::get('subjects/{subject}/modules/{module}/edit', [ModuleController::class, 'edit'])
+        ->name('courses.subjects.modules.edit');
+    Route::put('subjects/{subject}/modules/{module}', [ModuleController::class, 'update'])
+        ->name('courses.subjects.modules.update');
+    Route::delete('subjects/{subject}/modules/{module}', [ModuleController::class, 'destroy'])
+        ->name('courses.subjects.modules.destroy');
 
-    Route::get('subjects/{subject}/assessments', [\App\Http\Controllers\AssessmentController::class, 'subjectAssessments'])->name('subjects.assessments');
+    // Assessments (nested under modules)
+    Route::get('subjects/{subject}/modules/{module}/assessments', [AssessmentController::class, 'index'])
+        ->name('courses.subjects.modules.assessments.index');
+    Route::get('subjects/{subject}/modules/{module}/assessments/create', [AssessmentController::class, 'create'])
+        ->name('courses.subjects.modules.assessments.create');
+    Route::post('subjects/{subject}/modules/{module}/assessments', [AssessmentController::class, 'store'])
+        ->name('courses.subjects.modules.assessments.store');
+    Route::get('subjects/{subject}/modules/{module}/assessments/{assessment}/edit', [AssessmentController::class, 'edit'])
+        ->name('courses.subjects.modules.assessments.edit');
+    Route::put('subjects/{subject}/modules/{module}/assessments/{assessment}', [AssessmentController::class, 'update'])
+        ->name('courses.subjects.modules.assessments.update');
+    Route::delete('subjects/{subject}/modules/{module}/assessments/{assessment}', [AssessmentController::class, 'destroy'])
+        ->name('courses.subjects.modules.assessments.destroy');
 
+    // Assessment Allocations
+    Route::get('modules/{module}/assessments/{assessment}/allocations', [AssessmentAllocationController::class, 'index'])
+        ->name('modules.assessments.allocations.index');
+    Route::get('modules/{module}/assessments/{assessment}/allocations/create', [AssessmentAllocationController::class, 'create'])
+        ->name('modules.assessments.allocations.create');
+    Route::post('modules/{module}/assessments/{assessment}/allocations', [AssessmentAllocationController::class, 'store'])
+        ->name('modules.assessments.allocations.store');
+    Route::get('modules/{module}/assessments/{assessment}/allocations/{allocation}/edit', [AssessmentAllocationController::class, 'edit'])
+        ->name('modules.assessments.allocations.edit');
+    Route::put('modules/{module}/assessments/{assessment}/allocations/{allocation}', [AssessmentAllocationController::class, 'update'])
+        ->name('modules.assessments.allocations.update');
+    Route::delete('modules/{module}/assessments/{assessment}/allocations/{allocation}', [AssessmentAllocationController::class, 'destroy'])
+        ->name('modules.assessments.allocations.destroy');
 
-    
 
     // Semesters
     Route::get('semesters', [\App\Http\Controllers\SemesterController::class, 'index'])->name('semesters.index');
@@ -49,6 +96,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('semesters/{semester}', [\App\Http\Controllers\SemesterController::class, 'update'])->name('semesters.update');
     Route::delete('semesters/{semester}', [\App\Http\Controllers\SemesterController::class, 'destroy'])->name('semesters.destroy');
 
+    // Study Modes
+    Route::get('study-modes', [\App\Http\Controllers\StudyModeController::class, 'index'])->name('study-modes.index');
+    Route::get('study-modes/create', [\App\Http\Controllers\StudyModeController::class, 'create'])->name('study-modes.create');
+    Route::post('study-modes', [\App\Http\Controllers\StudyModeController::class, 'store'])->name('study-modes.store');
+    Route::get('study-modes/{studyMode}', [\App\Http\Controllers\StudyModeController::class, 'show'])->name('study-modes.show');
+    Route::get('study-modes/{studyMode}/edit', [\App\Http\Controllers\StudyModeController::class, 'edit'])->name('study-modes.edit');
+    Route::put('study-modes/{studyMode}', [\App\Http\Controllers\StudyModeController::class, 'update'])->name('study-modes.update');
+    Route::delete('study-modes/{studyMode}', [\App\Http\Controllers\StudyModeController::class, 'destroy'])->name('study-modes.destroy');
+
+
+    // Enrollment Codes
+    Route::get('enrollment-codes', [\App\Http\Controllers\EnrollmentCodeController::class, 'index'])->name('enrollment-codes.index');
+    Route::get('enrollment-codes/create', [\App\Http\Controllers\EnrollmentCodeController::class, 'create'])->name('enrollment-codes.create');
+    Route::post('enrollment-codes', [\App\Http\Controllers\EnrollmentCodeController::class, 'store'])->name('enrollment-codes.store');
+    Route::get('enrollment-codes/{enrollmentCode}', [\App\Http\Controllers\EnrollmentCodeController::class, 'show'])->name('enrollment-codes.show');
+    Route::get('enrollment-codes/{enrollmentCode}/edit', [\App\Http\Controllers\EnrollmentCodeController::class, 'edit'])->name('enrollment-codes.edit');
+    Route::put('enrollment-codes/{enrollmentCode}', [\App\Http\Controllers\EnrollmentCodeController::class, 'update'])->name('enrollment-codes.update');
+    Route::delete('enrollment-codes/{enrollmentCode}', [\App\Http\Controllers\EnrollmentCodeController::class, 'destroy'])->name('enrollment-codes.destroy');
 
     // Contact Types
     Route::get('contact-types', [\App\Http\Controllers\ContactTypeController::class, 'index'])->name('contact-types.index');
@@ -58,6 +123,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('contact-types/{contactType}/edit', [\App\Http\Controllers\ContactTypeController::class, 'edit'])->name('contact-types.edit');
     Route::put('contact-types/{contactType}', [\App\Http\Controllers\ContactTypeController::class, 'update'])->name('contact-types.update');
     Route::delete('contact-types/{contactType}', [\App\Http\Controllers\ContactTypeController::class, 'destroy'])->name('contact-types.destroy');
+
+
+    // Assessment routes
+
 
     // Address Types
     Route::resource('address-types', \App\Http\Controllers\AddressTypeController::class)->except(['show']);
@@ -78,31 +147,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Qualification Levels
     Route::resource('qualification-levels', \App\Http\Controllers\QualificationLevelController::class)->except(['show']);
-
-
-   
 });
 
 Route::prefix('student')->group(function () {
 
-     // Core Student Routes
-     Route::get('students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index');
-     Route::get('students/create', [\App\Http\Controllers\StudentController::class, 'create'])->name('students.create');
-     Route::post('students', [\App\Http\Controllers\StudentController::class, 'store'])->name('students.store');
-     Route::get('students/{student}', [\App\Http\Controllers\StudentController::class, 'show'])->name('students.show');
-     Route::get('students/{student}/edit', [\App\Http\Controllers\StudentController::class, 'edit'])->name('students.edit');
-     Route::put('students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update');
-     Route::delete('students/{student}', [\App\Http\Controllers\StudentController::class, 'destroy'])->name('students.destroy');
- 
-     // Custom Student-Courses Routes
-     Route::get('students/{student}/courses', [\App\Http\Controllers\StudentCourseController::class, 'studentCourses'])->name('students.courses');
-     Route::get('students/{student}/courses/create', [\App\Http\Controllers\StudentCourseController::class, 'create'])->name('students.courses.create');
-     Route::post('students/{student}/courses', [\App\Http\Controllers\StudentCourseController::class, 'store'])->name('students.courses.store');
-     Route::get('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'show'])->name('students.courses.show');
-     Route::get('students/{student}/courses/{course}/edit', [\App\Http\Controllers\StudentCourseController::class, 'edit'])->name('students.courses.edit');
-     Route::put('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'update'])->name('students.courses.update');
-     Route::delete('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'destroy'])->name('students.courses.destroy');
- 
+    // Core Student Routes
+    Route::get('students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index');
+    Route::get('students/create', [\App\Http\Controllers\StudentController::class, 'create'])->name('students.create');
+    Route::post('students', [\App\Http\Controllers\StudentController::class, 'store'])->name('students.store');
+    Route::get('students/{student}', [\App\Http\Controllers\StudentController::class, 'show'])->name('students.show');
+    Route::get('students/{student}/edit', [\App\Http\Controllers\StudentController::class, 'edit'])->name('students.edit');
+    Route::put('students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update');
+    Route::delete('students/{student}', [\App\Http\Controllers\StudentController::class, 'destroy'])->name('students.destroy');
+
+    // Custom Student-Courses Routes
+    Route::get('students/{student}/courses', [\App\Http\Controllers\StudentCourseController::class, 'studentCourses'])->name('students.courses');
+    Route::get('students/{student}/courses/create', [\App\Http\Controllers\StudentCourseController::class, 'create'])->name('students.courses.create');
+    Route::post('students/{student}/courses', [\App\Http\Controllers\StudentCourseController::class, 'store'])->name('students.courses.store');
+    Route::get('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'show'])->name('students.courses.show');
+    Route::get('students/{student}/courses/{course}/edit', [\App\Http\Controllers\StudentCourseController::class, 'edit'])->name('students.courses.edit');
+    Route::put('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'update'])->name('students.courses.update');
+    Route::delete('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'destroy'])->name('students.courses.destroy');
+
 
     // Semester-Residency Routes
     Route::get('students/{student}/semesters/{semester}/residency', [\App\Http\Controllers\SemesterResidencyController::class, 'studentSemesterResidency'])->name('students.semesters.residency');
@@ -225,6 +291,16 @@ Route::prefix('student')->group(function () {
     Route::put('attendance/{attendance}', [\App\Http\Controllers\AttendanceController::class, 'update'])->name('students.attendance.update');
     Route::delete('attendance/{attendance}', [\App\Http\Controllers\AttendanceController::class, 'destroy'])->name('students.attendance.destroy');
 
+
+
+    //student enrollments
+    Route::get('students/{student}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'index'])->name('students.enrollments.index');
+    Route::get('students/{student}/enrollments/create', [\App\Http\Controllers\StudentEnrollmentController::class, 'create'])->name('students.enrollments.create');
+    Route::post('students/{student}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'store'])->name('students.enrollments.store');
+    Route::get('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'show'])->name('students.enrollments.show');
+    Route::get('students/{student}/enrollments/{enrollment}/edit', [\App\Http\Controllers\StudentEnrollmentController::class, 'edit'])->name('students.enrollments.edit');
+    Route::put('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'update'])->name('students.enrollments.update');
+    Route::delete('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'destroy'])->name('students.enrollments.destroy');
 });
 
 
@@ -238,5 +314,38 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/admin/enrollments/codes', [StudentEnrollmentController::class, 'getEnrollmentCodes'])
+    ->name('enrollments.codes');
+
+// Module Routes
+Route::get('modules', [ModuleController::class, 'index'])->name('modules.index');
+Route::get('modules/create', [ModuleController::class, 'create'])->name('modules.create');
+Route::post('modules', [ModuleController::class, 'store'])->name('modules.store');
+Route::get('modules/{module}', [ModuleController::class, 'show'])->name('modules.show');
+Route::get('modules/{module}/edit', [ModuleController::class, 'edit'])->name('modules.edit');
+Route::put('modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
+Route::delete('modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
+
+// Assessment Routes
+Route::get('modules/{module}/assessments', [AssessmentController::class, 'index'])->name('modules.assessments.index');
+Route::get('modules/{module}/assessments/create', [AssessmentController::class, 'create'])->name('modules.assessments.create');
+Route::post('modules/{module}/assessments', [AssessmentController::class, 'store'])->name('modules.assessments.store');
+Route::get('modules/{module}/assessments/{assessment}/edit', [AssessmentController::class, 'edit'])->name('modules.assessments.edit');
+Route::put('modules/{module}/assessments/{assessment}', [AssessmentController::class, 'update'])->name('modules.assessments.update');
+Route::delete('modules/{module}/assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('modules.assessments.destroy');
+
+// Assessment Allocation Routes (these were already defined)
+Route::get('modules/{module}/assessments/{assessment}/allocations', [AssessmentAllocationController::class, 'index'])
+    ->name('modules.assessments.allocations.index');
+Route::get('modules/{module}/assessments/{assessment}/allocations/create', [AssessmentAllocationController::class, 'create'])
+    ->name('modules.assessments.allocations.create');
+Route::post('modules/{module}/assessments/{assessment}/allocations', [AssessmentAllocationController::class, 'store'])
+    ->name('modules.assessments.allocations.store');
+Route::get('modules/{module}/assessments/{assessment}/allocations/{allocation}/edit', [AssessmentAllocationController::class, 'edit'])
+    ->name('modules.assessments.allocations.edit');
+Route::put('modules/{module}/assessments/{assessment}/allocations/{allocation}', [AssessmentAllocationController::class, 'update'])
+    ->name('modules.assessments.allocations.update');
+Route::delete('modules/{module}/assessments/{assessment}/allocations/{allocation}', [AssessmentAllocationController::class, 'destroy'])
+    ->name('modules.assessments.allocations.destroy');
 
 require __DIR__ . '/auth.php';

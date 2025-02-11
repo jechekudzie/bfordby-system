@@ -37,6 +37,11 @@ class Semester extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function assessmentAllocations()
+    {
+        return $this->hasMany(AssessmentAllocation::class);
+    }
+
     //slug
 
     public function getSlugOptions() : SlugOptions

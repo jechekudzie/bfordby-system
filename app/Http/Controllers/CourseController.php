@@ -26,7 +26,7 @@ class CourseController extends Controller
             'description' => 'nullable|string',
             'duration_months' => 'nullable|integer',
             'fee' => 'nullable|numeric',
-            'study_mode' => 'required|in:full-time,part-time',
+        
             'status' => 'required|in:active,inactive'
         ]);
 
@@ -38,7 +38,20 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        $course->load('subjects');
+        // Load necessary relationships with counts
+        $course->load([
+            'subjects' => function ($query) {
+                $query->withCount('modules');
+            },
+            'studyModes' => function ($query) {
+                $query->withCount('enrollments');
+            },
+            'enrollments' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'subjects.modules'
+        ]);
+
         return view('admin.courses.show', compact('course'));
     }
 
@@ -55,7 +68,6 @@ class CourseController extends Controller
             'description' => 'nullable|string',
             'duration_months' => 'nullable|integer',
             'fee' => 'nullable|numeric',
-            'study_mode' => 'required|in:full-time,part-time',
             'status' => 'required|in:active,inactive'
         ]);
 

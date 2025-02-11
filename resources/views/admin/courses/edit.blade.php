@@ -10,10 +10,25 @@
         </div>
     </div>
     <div class="card-body bg-light">
-        <form action="{{ route('admin.courses.update', $course->slug) }}" method="POST">
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible mb-4">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <h6 class="mb-0">Please correct the following errors:</h6>
+                </div>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('admin.courses.update', $course) }}" method="POST">
             @csrf
             @method('PUT')
-
+            
             <div class="row g-3">
                 <!-- Course Name -->
                 <div class="col-md-6">
@@ -59,27 +74,12 @@
                 <!-- Fee -->
                 <div class="col-md-6">
                     <label class="form-label" for="fee">Fee</label>
-                    <input type="text" 
+                    <input type="number" 
                            class="form-control @error('fee') is-invalid @enderror" 
                            id="fee" 
-                           name="fee" 
+                           name="fee" step="0.01"
                            value="{{ old('fee', $course->fee) }}">
                     @error('fee')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Study Mode -->
-                <div class="col-md-6">
-                    <label class="form-label" for="study_mode">Study Mode</label>
-                    <select class="form-select @error('study_mode') is-invalid @enderror" 
-                            id="study_mode" 
-                            name="study_mode" 
-                            required>
-                        <option value="full-time" {{ old('study_mode', $course->study_mode) == 'full-time' ? 'selected' : '' }}>Full-Time</option>
-                        <option value="part-time" {{ old('study_mode', $course->study_mode) == 'part-time' ? 'selected' : '' }}>Part-Time</option>
-                    </select>
-                    @error('study_mode')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -99,9 +99,9 @@
                     @enderror
                 </div>
 
-                <!-- Course Description -->
+                <!-- Description -->
                 <div class="col-12">
-                    <label class="form-label" for="description">Course Description</label>
+                    <label class="form-label" for="description">Description</label>
                     <textarea class="form-control @error('description') is-invalid @enderror" 
                               id="description" 
                               name="description" 
@@ -112,9 +112,9 @@
                 </div>
             </div>
 
-            <!-- Save Button -->
+            <!-- Submit Button -->
             <div class="mt-3">
-                <button type="submit" class="btn btn-success">Update Course</button>
+                <button type="submit" class="btn btn-primary">Update Course</button>
                 <a href="{{ route('admin.courses.index') }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>

@@ -10,6 +10,21 @@
         </div>
     </div>
     <div class="card-body bg-light">
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible mb-4">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <h6 class="mb-0">Please correct the following errors:</h6>
+                </div>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('admin.courses.store') }}" method="POST">
             @csrf
             
@@ -58,27 +73,12 @@
                 <!-- Fee -->
                 <div class="col-md-6">
                     <label class="form-label" for="fee">Fee</label>
-                    <input type="text" 
+                    <input type="number" 
                            class="form-control @error('fee') is-invalid @enderror" 
                            id="fee" 
-                           name="fee" 
+                           name="fee" step="0.01"
                            value="{{ old('fee') }}">
                     @error('fee')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Study Mode -->
-                <div class="col-md-6">
-                    <label class="form-label" for="study_mode">Study Mode</label>
-                    <select class="form-select @error('study_mode') is-invalid @enderror" 
-                            id="study_mode" 
-                            name="study_mode" 
-                            required>
-                        <option value="full-time" {{ old('study_mode') == 'full-time' ? 'selected' : '' }}>Full-Time</option>
-                        <option value="part-time" {{ old('study_mode') == 'part-time' ? 'selected' : '' }}>Part-Time</option>
-                    </select>
-                    @error('study_mode')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

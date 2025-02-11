@@ -14,17 +14,18 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code')->unique()->nullable();
             $table->text('description')->nullable();
             $table->integer('duration_months')->nullable();
             $table->decimal('fee', 10, 2)->nullable();
-            $table->enum('study_mode', ['full-time', 'part-time']);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();
         });
     }
+
+    
 
     /**
      * Reverse the migrations.

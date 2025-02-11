@@ -61,23 +61,10 @@
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
-                    <i class="fas fa-book-open fa-3x text-success"></i>
+                    <i class="fas fa-book fa-3x text-primary"></i>
                     <h5 class="mt-3">Courses</h5>
                     <p>Total: {{ $coursesCount }}</p>
-                    <a href="{{ route('admin.courses.index') }}" class="btn btn-success">
-                        <i class="fas fa-list"></i> View All
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <i class="fas fa-book fa-3x text-warning"></i>
-                    <h5 class="mt-3">Subjects</h5>
-                    <p>Total: {{ $subjectsCount }}</p>
-                    <a href="{{ route('admin.subjects.index') }}" class="btn btn-warning">
+                    <a href="{{ route('admin.courses.index') }}" class="btn btn-primary">
                         <i class="fas fa-list"></i> View All
                     </a>
                 </div>
@@ -96,6 +83,42 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="fas fa-qrcode text-primary fa-lg"></i>
+                        </div>
+                        <h5 class="mb-0 ms-3">Enrollment Codes</h5>
+                    </div>
+                    <p class="text-muted mb-3">Manage enrollment codes for student registrations and course assignments.</p>
+                    <a href="{{ route('admin.enrollment-codes.index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-2"></i>Manage Codes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+    <div class="card h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                    <i class="fas fa-clock text-info fa-lg"></i>
+                </div>
+                <h5 class="mb-0 ms-3">Study Modes</h5>
+            </div>
+            <p class="text-muted mb-3">Manage study modes like full-time, part-time, and distance learning options.</p>
+            <a href="{{ route('admin.study-modes.index') }}" class="btn btn-outline-info">
+                <i class="fas fa-arrow-right me-2"></i>Manage Modes
+            </a>
+        </div>
+    </div>
+</div> 
+
+
 
         <!-- SYSTEM CONFIGURATIONS -->
         <div class="col-md-12 mt-4">

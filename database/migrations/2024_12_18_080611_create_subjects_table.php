@@ -18,16 +18,15 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('course_id');
             $table->integer('credits')->nullable();
-            $table->string('level')->nullable(); // e.g., "Beginner", "Intermediate", "Advanced"
+            $table->string('level')->nullable(); // Beginner, Intermediate, Advanced
             $table->json('prerequisites')->nullable(); // Store prerequisite subject IDs
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();
 
-        
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
         });
-
     }
 
     /**

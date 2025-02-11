@@ -17,7 +17,6 @@ class Course extends Model
         'description',
         'duration_months',
         'fee',
-        'study_mode',
         'status',
         'slug'
     ];
@@ -31,17 +30,30 @@ class Course extends Model
         return $this->hasMany(Subject::class);
     }
 
+    /**
+     * The study modes that belong to the course.
+     */
+    public function studyModes()
+    {
+        return $this->belongsToMany(StudyMode::class, 'course_study_modes')
+                    ->withTimestamps();
+    }
+
     public function studentCourses()
     {
         return $this->hasMany(StudentCourse::class);
     }
 
 
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
      //slug
      public function getSlugOptions() : SlugOptions
      {
          return SlugOptions::create()
-             ->generateSlugsFrom(['name'])
+             ->generateSlugsFrom('name')
              ->saveSlugsTo('slug');
      }
 

@@ -10,6 +10,9 @@ use App\Models\StudentCourse;
 use App\Models\StudentPayment;
 use App\Models\Attendance;
 use App\Models\Semester;
+use App\Models\StudyMode;
+use App\Models\EnrollmentCode;
+use App\Models\Assessment;
 
 class UtilitiesController extends Controller
 {
@@ -24,6 +27,9 @@ class UtilitiesController extends Controller
         'paymentsCount' => StudentPayment::count(),
         'attendanceCount' => Attendance::count(),
         'semestersCount' => Semester::count(),
+        'studyModesCount' => StudyMode::count(),
+        'enrollmentCodesCount' => EnrollmentCode::count(),
+        'assessmentsCount' => Assessment::count(),
     ]);
 }
 

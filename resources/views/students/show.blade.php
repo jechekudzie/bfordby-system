@@ -216,7 +216,7 @@
                 <i class="fas fa-graduation-cap text-primary"></i>
             </div>
             <h6 class="text-800">Enrolled Courses</h6>
-            <h3 class="mb-0">{{ $student->studentCourses->count() }}</h3>
+            <h3 class="mb-0">{{ $student->enrollments->count() }}</h3>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
@@ -782,10 +782,10 @@
                                                             </div>
                                                         @endif
 
-                                                        @if($identification->document_path)
+                                                        @if($identification->document)
                                                             <div class="col-12">
                                                                 <div class="border-top pt-3">
-                                                                    <a href="{{ Storage::url($identification->document_path) }}" 
+                                                                    <a href="{{ Storage::url($identification->document) }}" 
                                                                        class="btn btn-sm btn-outline-primary" 
                                                                        target="_blank">
                                                                         <i class="fas fa-file-alt me-1"></i>View Document
@@ -1319,60 +1319,105 @@
 
             <!-- Courses Tab -->
             <div class="tab-pane fade" id="courses" role="tabpanel">
-                <div class="d-flex justify-content-end mb-3">
-                    <a href="{{ route('students.courses.create', $student) }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Enroll in New Course
-                    </a>
-                </div>
-                @if($student->studentCourses->count() > 0)
-                <div class="table-responsive">
-                    <table class="table custom-table">
-                        <thead>
-                            <tr>
-                                <th>Course</th>
-                                <th>Start Date</th>
-                                <th>Status</th>
-                                <th>Progress</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($student->studentCourses as $course)
-                            <tr>
-                                <td>{{ $course->course->name }}</td>
-                                <td>{{ date('d/m/Y', strtotime($course->start_date)) }}</td>
-                                <td>
-                                    <span class="badge bg-{{ $course->status === 'active' ? 'success' : 'warning' }}">
-                                        {{ ucfirst($course->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="progress" style="height: 5px;">
-                                        <div class="progress-bar" role="progressbar" style="width: 75%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="{{ route('student-courses.show', $course) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @else
-                <div class="text-center py-5">
-                    <div class="mb-3">
-                        <span class="fas fa-graduation-cap fa-3x text-300"></span>
+                <div class="card">
+                    <div class="card-header bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fs-5">
+                                <i class="fas fa-graduation-cap text-primary me-2"></i>Course Enrollments
+                            </h6>
+                            <a href="{{ route('students.enrollments.create', $student) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-1"></i>Enroll in Course
+                            </a>
+                        </div>
                     </div>
-                    <h6 class="text-800">No Courses Enrolled</h6>
-                    <p class="text-500">This student hasn't enrolled in any courses yet.</p>
-                    <a href="{{ route('students.courses.create', $student) }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Enroll in Course
-                    </a>
+
+                    @if($student->enrollments->count() > 0)
+                    <div class="card-body">
+                        <div class="row g-4">
+                            @foreach($student->enrollments as $enrollment)
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge rounded-pill bg-{{ $enrollment->status === 'active' ? 'success' : ($enrollment->status === 'completed' ? 'info' : 'warning') }}">
+                                                        <i class="fas fa-{{ $enrollment->status === 'active' ? 'check' : ($enrollment->status === 'completed' ? 'flag-checkered' : 'clock') }}"></i>
+                                                    </span>
+                                                    <h6 class="mb-0 text-primary">{{ $enrollment->course->name }}</h6>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>View Course
+                                                    </a>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end">
+                                                            <a href="{{ route('students.enrollments.edit', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                               class="dropdown-item">
+                                                                <i class="fas fa-edit text-primary me-2"></i>Edit
+                                                            </a>
+                                                            <form action="{{ route('students.enrollments.destroy', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                                  method="POST" 
+                                                                  onsubmit="return confirm('Are you sure you want to delete this enrollment?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                    <i class="fas fa-trash me-2"></i>Delete
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-clock text-muted me-2"></i>
+                                                        <span class="text-muted">Study Mode:</span>
+                                                        <span class="ms-2">{{ $enrollment->studyMode->name }}</span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-calendar text-muted me-2"></i>
+                                                        <span class="text-muted">Enrolled:</span>
+                                                        <span class="ms-2">{{ date('M d, Y', strtotime($enrollment->enrollment_date)) }}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-qrcode text-muted me-2"></i>
+                                                        <span class="text-muted">Code:</span>
+                                                        <span class="ms-2">{{ $enrollment->enrollmentCode->base_code }}</span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-info-circle text-muted me-2"></i>
+                                                        <span class="text-muted">Status:</span>
+                                                        <span class="ms-2 badge bg-{{ 
+                                                            $enrollment->status === 'active' ? 'success' : 
+                                                            ($enrollment->status === 'completed' ? 'info' : 'warning') 
+                                                        }} px-2">
+                                                            {{ ucfirst($enrollment->status) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @else
+                    <div class="card-body text-center py-5 text-muted">
+                        <i class="fas fa-graduation-cap fa-3x mb-3"></i>
+                        <p class="mb-0">No course enrollments found for this student</p>
+                    </div>
+                    @endif
                 </div>
-                @endif
             </div>
 
             <!-- Attendance Tab -->

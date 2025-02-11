@@ -166,9 +166,9 @@
                         @error('document')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        @if($identification->document_path)
+                        @if($identification->document)
                             <div class="mt-2">
-                                <a href="{{ Storage::url($identification->document_path) }}" 
+                                <a href="{{ Storage::url($identification->document) }}" 
                                    class="btn btn-sm btn-outline-primary" 
                                    target="_blank">
                                     <i class="fas fa-file-alt me-1"></i>View Current Document
@@ -177,6 +177,44 @@
                         @endif
                     </div>
 
+                    <!-- Add this after the document upload field -->
+                    <!-- <div class="col-md-12">
+                        @if($identification->document)
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Current Document</h6>
+                                        <a href="{{ Storage::url($identification->document) }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           target="_blank">
+                                            <i class="fas fa-external-link-alt me-1"></i>Open in New Tab
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $extension = pathinfo($identification->document, PATHINFO_EXTENSION);
+                                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png']);
+                                    @endphp
+
+                                    @if($isImage)
+                                        <img src="{{ Storage::url($identification->document) }}" 
+                                             class="img-fluid rounded" 
+                                             alt="Document Preview"
+                                             style="max-height: 400px; width: auto; margin: 0 auto; display: block;">
+                                    @else
+                                        <div class="ratio ratio-16x9">
+                                            <embed src="{{ Storage::url($identification->document) }}" 
+                                                   type="application/pdf" 
+                                                   width="100%" 
+                                                   height="400px">
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+ -->
                     <!-- Notes -->
                     <div class="col-12">
                         <label class="form-label">
@@ -193,13 +231,14 @@
 
                     <div class="col-12">
                         <hr>
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('students.show', $student) }}" class="btn btn-secondary">
-                                <i class="fas fa-times me-1"></i> Cancel
-                            </a>
+                        <div class="d-flex justify-content-start gap-2">
+                            
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-1"></i> Update Identification
                             </button>
+                            <a href="{{ route('students.show', $student) }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
                         </div>
                     </div>
                 </div>
