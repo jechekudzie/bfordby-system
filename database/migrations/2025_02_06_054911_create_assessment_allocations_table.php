@@ -14,16 +14,17 @@ return new class extends Migration
         Schema::create('assessment_allocations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('assessment_id');
-            $table->unsignedBigInteger('enrollment_code_id'); // Instead of `enrollment_id`
+            $table->unsignedBigInteger('enrollment_code_id');
             $table->unsignedBigInteger('semester_id');
-            $table->enum('status', ['pending', 'submitted', 'graded'])->default('pending');
             $table->date('due_date')->nullable();
-            $table->text('content')->nullable(); // For text-based assessments
-            $table->string('file_path')->nullable(); // For file uploads
+            $table->enum('status', ['pending', 'open', 'closed'])->default('pending');
+            $table->text('content')->nullable();
+            $table->string('file_path')->nullable();
+            $table->enum('submission_type', ['online', 'upload', 'in-class', 'group']);
+            $table->boolean('is_timed')->default(false);
+            $table->integer('duration_minutes')->nullable();
             $table->timestamps();
-    
         });
-        
     }
 
     /**

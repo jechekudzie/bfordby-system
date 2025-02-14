@@ -27,6 +27,11 @@ class Assessment extends Model
         return $this->hasMany(AssessmentAllocation::class);
     }
 
+    public function questions()
+    {
+        return $this->hasMany(AssessmentQuestion::class);
+    }
+
     public function getSlugOptions() : SlugOptions
     {
         return SlugOptions::create()

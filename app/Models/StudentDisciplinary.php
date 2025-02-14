@@ -53,11 +53,7 @@ class StudentDisciplinary extends Model
     public const SANCTIONS = [
         'verbal_warning' => 'Verbal Warning',
         'written_warning' => 'Written Warning',
-        'detention' => 'Detention',
         'suspension' => 'Suspension',
-        'probation' => 'Probation',
-        'expulsion' => 'Expulsion',
-        'community_service' => 'Community Service',
         'other' => 'Other'
     ];
 

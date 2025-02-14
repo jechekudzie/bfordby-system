@@ -80,8 +80,8 @@
                 </button>
                 <a class="navbar-brand me-1 me-sm-3" href="{{ route('admin.dashboard') }}">
                     <div class="d-flex align-items-center">
-                        <img src="{{ asset('assets/img/icons/logo.png') }}" alt="logo" width="27" />
-                        <h5 class="logo-text ms-2 d-none d-sm-block">{{ config('app.name') }}</h5>
+                        <img style="width: 200px;" src="{{ asset('assets/img/icons/logo.png') }}" alt="logo" width="27" />
+                        <!-- <h5 class="logo-text ms-2 d-none d-sm-block">{{ config('app.name') }}</h5> -->
                     </div>
                 </a>
             </div>

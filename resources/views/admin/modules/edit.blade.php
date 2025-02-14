@@ -19,7 +19,7 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ route('admin.courses.subjects.modules.index', [$subject->course, $subject]) }}" class="btn btn-outline-primary">
+            <a href="{{ route('admin.courses.subjects.modules.index', [$subject->slug]) }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left me-2"></i>Back to Modules
             </a>
         </div>
@@ -60,7 +60,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save me-2"></i>Update Module
                 </button>
-                <a href="{{ route('admin.courses.subjects.modules.index', [$subject->course, $subject]) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('admin.courses.subjects.modules.index', [$subject->slug]) }}" class="btn btn-outline-secondary">
                     Cancel
                 </a>
             </div>
