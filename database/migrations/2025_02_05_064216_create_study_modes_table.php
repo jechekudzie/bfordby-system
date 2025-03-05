@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('study_modes', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique(); // Example: Full-Time, Part-Time
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

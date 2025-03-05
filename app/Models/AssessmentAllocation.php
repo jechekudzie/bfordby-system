@@ -28,12 +28,11 @@ class AssessmentAllocation extends Model
 
     public function questions()
     {
-        return $this->hasMany(AssessmentQuestion::class);
+        return $this->hasMany(AssessmentAllocationQuestion::class);
     }
 
-    public function submissions()
+    public function groups()
     {
-        return $this->hasMany(AssessmentSubmission::class);
+        return $this->hasMany(Group::class);
     }
-
 }

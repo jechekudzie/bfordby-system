@@ -6,11 +6,11 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h5 class="mb-0">
-                    <i class="fas fa-tasks text-primary me-2"></i>Subject Assessments
+                    <i class="fas fa-tasks text-primary me-2"></i>Disciplines Assessments
                 </h5>
                 <p class="text-muted mb-0 mt-2">
                     <span class="h5 fw-bold text-dark">
-                        Subject: {{ $subject->name }}
+                        Disciplines: {{ $subject->name }}
                         <span class="mx-2">•</span>
                         Course: {{ $subject->course->name }}
                     </span>
@@ -18,7 +18,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Subjects
+                    <i class="fas fa-arrow-left me-2"></i>Back to Discipliness
                 </a>
                 <a href="{{ route('admin.assessments.create', ['subject' => $subject->id]) }}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Add Assessment

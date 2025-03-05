@@ -11,6 +11,7 @@ class Group extends Model
         'assessment_allocation_id',
         'name'
     ];
+
     public function assessmentAllocation()
     {
         return $this->belongsTo(AssessmentAllocation::class);
@@ -18,11 +19,6 @@ class Group extends Model
 
     public function students()
     {
-        return $this->hasMany(GroupStudent::class);
-    }
-
-    public function submissions()
-    {
-        return $this->hasMany(AssessmentSubmission::class);
+        return $this->belongsToMany(Student::class, 'group_students');
     }
 }

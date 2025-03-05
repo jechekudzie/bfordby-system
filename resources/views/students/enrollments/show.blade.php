@@ -168,11 +168,12 @@
                                                         <table class="table table-hover align-middle border">
                                                             <thead class="table-light">
                                                                 <tr>
-                                                                    <th>Assessment</th>
-                                                                    <th>Type</th>
-                                                                    <th>Due Date</th>
-                                                                    <th>Status</th>
-                                                                    <th>Actions</th>
+                                                                    <th style="width: 25%">Assessment</th>
+                                                                    <th style="width: 15%">Type</th>
+                                                                    <th style="width: 15%">Submission</th>
+                                                                    <th style="width: 15%">Due Date</th>
+                                                                    <th style="width: 15%">Status</th>
+                                                                    <th style="width: 15%">Actions</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -182,73 +183,101 @@
                                                                             <div class="d-flex flex-column">
                                                                                 <span class="fw-medium">{{ $allocation->assessment->name }}</span>
                                                                                 @if($allocation->assessment->description)
-                                                                                    <small class="text-muted">{{ $allocation->assessment->description }}</small>
+                                                                                    <small class="text-muted">{{ Str::limit($allocation->assessment->description, 100) }}</small>
                                                                                 @endif
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <span class="badge bg-{{ 
-                                                                                $allocation->assessment->type === 'exam' ? 'danger' : 
-                                                                                ($allocation->assessment->type === 'test' ? 'warning' : 
-                                                                                ($allocation->assessment->type === 'practical' ? 'info' : 'primary')) 
-                                                                            }}">
-                                                                                {{ ucfirst($allocation->assessment->type) }}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            <div class="d-flex align-items-center">
-                                                                                <i class="far fa-calendar-alt text-muted me-2"></i>
-                                                                                {{ date('M d, Y', strtotime($allocation->due_date)) }}
+                                                                            <div class="d-flex flex-column">
+                                                                                <span class="badge bg-{{ 
+                                                                                    $allocation->assessment->type === 'exam' ? 'danger' : 
+                                                                                    ($allocation->assessment->type === 'test' ? 'warning' : 
+                                                                                    ($allocation->assessment->type === 'practical' ? 'info' : 'primary')) 
+                                                                                }} mb-1">
+                                                                                    {{ ucfirst($allocation->assessment->type) }}
+                                                                                </span>
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <span class="badge bg-{{ 
-                                                                                $allocation->status === 'graded' ? 'success' : 
-                                                                                ($allocation->status === 'submitted' ? 'info' : 'warning') 
-                                                                            }}">
-                                                                                <i class="fas fa-circle me-1 small"></i>
-                                                                                {{ ucfirst($allocation->status) }}
-                                                                            </span>
+                                                                            <div class="d-flex flex-column">
+                                                                                <span class="badge bg-info mb-1">
+                                                                                    @if($allocation->submission_type === 'online' && $allocation->is_timed)
+                                                                                        Online ({{ $allocation->duration_minutes }} min)
+                                                                                    @else
+                                                                                        {{ ucfirst($allocation->submission_type) }}
+                                                                                    @endif
+                                                                                </span>
+                                                                                @if($allocation->is_group_submission)
+                                                                                    <small class="text-muted">
+                                                                                        <i class="fas fa-users me-1"></i>Group Submission
+                                                                                    </small>
+                                                                                @endif
+                                                                            </div>
                                                                         </td>
                                                                         <td>
-                                                                            <div class="btn-group btn-group-sm">
+                                                                            <div class="d-flex flex-column">
+                                                                                <span class="fw-medium">
+                                                                                    <i class="far fa-calendar-alt text-muted me-1"></i>
+                                                                                    {{ date('M d, Y', strtotime($allocation->due_date)) }}
+                                                                                </span>
+                                                                                <small class="text-muted">
+                                                                                    {{ date('h:i A', strtotime($allocation->due_date)) }}
+                                                                                </small>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="d-flex flex-column">
+                                                                                <span class="badge bg-{{ 
+                                                                                    $allocation->status === 'graded' ? 'success' : 
+                                                                                    ($allocation->status === 'submitted' ? 'info' : 
+                                                                                    ($allocation->status === 'in_progress' ? 'warning' : 'secondary')) 
+                                                                                }} mb-1">
+                                                                                    <i class="fas fa-circle me-1 small"></i>
+                                                                                    {{ ucfirst($allocation->status) }}
+                                                                                </span>
+                                                                                @if($allocation->grade)
+                                                                                    <small class="text-success fw-medium">
+                                                                                        <i class="fas fa-check-circle me-1"></i>{{ $allocation->grade }}%
+                                                                                    </small>
+                                                                                @endif
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="d-flex flex-column gap-2">
                                                                                 @if($allocation->status === 'pending')
-                                                                                    <a href="#" 
-                                                                                       class="btn btn-primary"
-                                                                                       title="Submit Assessment">
-                                                                                        <i class="fas fa-upload me-1"></i>Submit
+                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                                                                       class="btn btn-primary btn-sm w-100">
+                                                                                        @if($allocation->submission_type === 'online')
+                                                                                            <i class="fas fa-edit me-1"></i>Take Assessment
+                                                                                        @elseif($allocation->submission_type === 'file')
+                                                                                            <i class="fas fa-upload me-1"></i>Upload File
+                                                                                        @else
+                                                                                            <i class="fas fa-paper-plane me-1"></i>Submit
+                                                                                        @endif
+                                                                                    </a>
+                                                                                @elseif($allocation->status === 'in_progress')
+                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                                                                       class="btn btn-warning btn-sm w-100">
+                                                                                        <i class="fas fa-hourglass-half me-1"></i>Continue
                                                                                     </a>
                                                                                 @elseif($allocation->status === 'submitted')
-                                                                                    <button type="button" 
-                                                                                            class="btn btn-info"
-                                                                                            disabled
-                                                                                            title="Assessment Submitted">
-                                                                                        <i class="fas fa-check me-1"></i>Submitted
-                                                                                    </button>
-                                                                                @else
-                                                                                    <button type="button" 
-                                                                                            class="btn btn-success"
-                                                                                            disabled
-                                                                                            title="Assessment Graded">
-                                                                                        <i class="fas fa-check-double me-1"></i>Graded
-                                                                                    </button>
-                                                                                @endif
-
-                                                                                @if($allocation->file_path)
-                                                                                    <a href="#" 
-                                                                                       class="btn btn-outline-primary"
-                                                                                       target="_blank"
-                                                                                       title="Download File">
-                                                                                        <i class="fas fa-download"></i>
+                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                                                                       class="btn btn-info btn-sm w-100">
+                                                                                        <i class="fas fa-eye me-1"></i>View
+                                                                                    </a>
+                                                                                @elseif($allocation->status === 'graded')
+                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                                                                       class="btn btn-success btn-sm w-100">
+                                                                                        <i class="fas fa-check-double me-1"></i>View Grade
                                                                                     </a>
                                                                                 @endif
-                                                                                @if($allocation->content)
+
+                                                                                @if($allocation->assessment->description)
                                                                                     <button type="button" 
-                                                                                            class="btn btn-outline-info"
+                                                                                            class="btn btn-outline-secondary btn-sm w-100"
                                                                                             data-bs-toggle="modal" 
-                                                                                            data-bs-target="#contentModal{{ $allocation->id }}"
-                                                                                            title="View Content">
-                                                                                        <i class="fas fa-eye"></i>
+                                                                                            data-bs-target="#infoModal{{ $allocation->id }}">
+                                                                                        <i class="fas fa-info-circle me-1"></i>Details
                                                                                     </button>
                                                                                 @endif
                                                                             </div>
@@ -376,29 +405,68 @@
     </div>
 </div>
 
-{{-- Content Modals --}}
-@foreach($allocations as $semesterAllocations)
-    @foreach($semesterAllocations as $allocation)
-        @if($allocation->content)
-            <div class="modal fade" id="contentModal{{ $allocation->id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Assessment Content</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="p-3 bg-light rounded">
-                                {!! nl2br(e($allocation->content)) !!}
+{{-- Assessment Info Modals --}}
+@foreach($subjects as $subject)
+    @foreach($subject->modules as $module)
+        @php
+            $moduleAssessments = collect();
+            foreach ($subjectAssessments[$subject->id] as $semesterAllocations) {
+                $moduleAssessments = $moduleAssessments->concat(
+                    $semesterAllocations->filter(function($allocation) use ($module) {
+                        return $allocation->assessment->module_id === $module->id;
+                    })
+                );
+            }
+        @endphp
+        @foreach($moduleAssessments as $allocation)
+            @if($allocation->assessment->description)
+                <div class="modal fade" id="infoModal{{ $allocation->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    {{ $allocation->assessment->name }} - Instructions
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <div class="modal-body">
+                                <div class="p-3 bg-light rounded">
+                                    {!! nl2br(e($allocation->assessment->description)) !!}
+                                </div>
+                                @if($allocation->is_timed)
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Time Limit:</strong> This is a timed assessment. You will have 
+                                        {{ $allocation->duration_minutes }} minutes to complete it once started.
+                                    </div>
+                                @endif
+                                @if($allocation->due_date)
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        <strong>Due Date:</strong> 
+                                        {{ date('M d, Y H:i', strtotime($allocation->due_date)) }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="modal-footer">
+                                @if($allocation->status === 'pending')
+                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                       class="btn btn-primary">
+                                        @if($allocation->submission_type === 'online')
+                                            <i class="fas fa-edit me-1"></i>Start Assessment
+                                        @else
+                                            <i class="fas fa-paper-plane me-1"></i>Submit Now
+                                        @endif
+                                    </a>
+                                @endif
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        @endforeach
     @endforeach
 @endforeach
 @endsection 

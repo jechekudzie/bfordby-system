@@ -47,6 +47,7 @@ class Subject extends Model
                     ->withTimestamps();
     }
 
+
     //slug
     public function getSlugOptions() : SlugOptions
     {

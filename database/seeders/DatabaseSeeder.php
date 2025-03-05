@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         // First, seed reference tables
         $this->call([
@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             SemesterSeeder::class,
         ]);
 
-    
+        $this->call([
+            StudyModesSeeder::class,
+        ]);
     }
 }

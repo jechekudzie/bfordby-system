@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h5 class="mb-0">
-                    <i class="fas fa-book-open me-1 text-primary"></i>Course Subjects
+                    <i class="fas fa-book-open me-1 text-primary"></i>Course Discipliness
                 </h5>
                 <p class="mb-0 text-muted">
                     Course: <span class="fw-bold text-dark">{{ $course->name }}</span>
@@ -19,7 +19,7 @@
                     <i class="fas fa-arrow-left me-1"></i>Back to Courses
                 </a>
                 <a href="{{ route('admin.courses.subjects.create', $course) }}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-1"></i>Add Subject
+                    <i class="fas fa-plus-circle me-1"></i>Add Disciplines
                 </a>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 <table class="table table-hover align-middle" id="subjectsTable">
                     <thead class="table-light">
                         <tr>
-                            <th>Subject Details</th>
+                            <th>Disciplines Details</th>
                             <th>Credit Hours</th>
                             <th>Modules</th>
                             <th>Actions</th>
@@ -95,12 +95,12 @@
             </div>
         @else
             <div class="text-center py-4">
-                <img src="{{ asset('images/illustrations/empty.svg') }}" alt="No Subjects" 
+                <img src="{{ asset('images/illustrations/empty.svg') }}" alt="No Discipliness" 
                      class="img-fluid mb-3" style="max-width: 200px;">
-                <h5 class="text-muted mb-2">No Subjects Found</h5>
+                <h5 class="text-muted mb-2">No Discipliness Found</h5>
                 <p class="text-muted mb-3">Start by adding your first subject to this course</p>
                 <a href="{{ route('admin.courses.subjects.create', $course) }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add First Subject
+                    <i class="fas fa-plus me-2"></i>Add First Disciplines
                 </a>
             </div>
         @endif

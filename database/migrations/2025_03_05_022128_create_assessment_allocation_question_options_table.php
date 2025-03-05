@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('group_students', function (Blueprint $table) {
+        Schema::create('assessment_allocation_question_options', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('group_id');
-            $table->unsignedBigInteger('student_id');
+            $table->unsignedBigInteger('assessment_allocation_question_id');
+            $table->string('option_text');
+            $table->boolean('is_correct')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('group_students');
+        Schema::dropIfExists('assessment_allocation_question_options');
     }
 };

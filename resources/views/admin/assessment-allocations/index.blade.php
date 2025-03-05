@@ -13,7 +13,7 @@
                         Course: <span class="fw-bold text-dark">{{ $module->subject->course->name }}</span>
                     </div>
                     <div class="mb-1">
-                        Subject: <span class="fw-bold text-dark">{{ $module->subject->name }}</span>
+                        Discipline: <span class="fw-bold text-dark">{{ $module->subject->name }}</span>
                         <span class="mx-2">•</span>
                         Code: <span class="fw-bold text-dark">{{ $module->subject->code }}</span>
                     </div>
@@ -53,6 +53,7 @@
                             <th>Enrollment Code</th>
                             <th>Semester</th>
                             <th>Due Date</th>
+                            <th>Submission Type</th>
                             <th>Status</th>
                             <th>Files/Content</th>
                             <th>Actions</th>
@@ -63,11 +64,27 @@
                             <tr>
                                 <td>{{ $allocation->enrollmentCode->base_code }}</td>
                                 <td>{{ $allocation->semester->name }}</td>
-                                <td>{{ date('M d, Y', strtotime($allocation->due_date)) }}</td>
+                                <td>{{ $allocation->due_date ? date('d M Y', strtotime($allocation->due_date)) : 'Not set' }}</td>
+                                <td>
+                                    <div>
+                                        <span class="badge bg-{{ 
+                                            $allocation->submission_type === 'upload' ? 'info' : 
+                                            ($allocation->submission_type === 'online' ? 'primary' : 
+                                            ($allocation->submission_type === 'in-class' ? 'warning' : 'success')) 
+                                        }}">
+                                            {{ ucfirst($allocation->submission_type) }}
+                                        </span>
+                                        @if($allocation->submission_type === 'online' && $allocation->is_timed)
+                                            <div class="small text-muted mt-1">
+                                                <i class="fas fa-clock me-1"></i>{{ $allocation->duration_minutes }} minutes
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>
                                     <span class="badge bg-{{ 
-                                        $allocation->status === 'graded' ? 'success' : 
-                                        ($allocation->status === 'submitted' ? 'info' : 'warning') 
+                                        $allocation->status === 'pending' ? 'warning' : 
+                                        ($allocation->status === 'open' ? 'success' : 'danger') 
                                     }}">
                                         {{ ucfirst($allocation->status) }}
                                     </span>
@@ -91,19 +108,30 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('modules.assessments.allocations.edit', 
-                                                 [$module, $assessment, $allocation]) }}" 
-                                           class="btn btn-outline-primary">
+                                        <a href="{{ route('admin.assessment-allocation-questions.index', $allocation) }}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Manage Questions">
+                                            <i class="fas fa-question-circle"></i>
+                                        </a>
+                                        @if($allocation->submission_type === 'group')
+                                        <a href="{{ route('admin.assessment-allocation-groups.index', $allocation) }}" 
+                                           class="btn btn-outline-success" 
+                                           title="Manage Groups">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        @endif
+                                        <a href="{{ route('admin.modules.assessments.allocations.edit', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('modules.assessments.allocations.destroy', 
-                                                     [$module, $assessment, $allocation]) }}" 
+                                        <form action="{{ route('admin.modules.assessments.allocations.destroy', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
                                               method="POST" 
                                               class="d-inline"
                                               onsubmit="return confirm('Are you sure you want to delete this allocation?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger">
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

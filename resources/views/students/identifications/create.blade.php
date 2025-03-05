@@ -15,7 +15,10 @@
                         <label class="form-label">
                             <i class="fas fa-id-card text-primary me-1"></i> ID Type
                         </label>
-                        <select name="type" class="form-select @error('type') is-invalid @enderror">
+                        <select name="type" 
+                                id="identificationType"
+                                class="form-select @error('type') is-invalid @enderror"
+                                required>
                             <option value="">Select ID Type</option>
                             @foreach($identificationTypes as $value => $label)
                                 <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>
@@ -37,7 +40,8 @@
                                name="number" 
                                class="form-control @error('number') is-invalid @enderror" 
                                value="{{ old('number') }}"
-                               placeholder="Enter ID number">
+                               placeholder="Enter ID number"
+                               required>
                         @error('number')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -51,37 +55,24 @@
                         <input type="date" 
                                name="issue_date" 
                                class="form-control datetimepicker @error('issue_date') is-invalid @enderror" 
-                               value="{{ old('issue_date') }}">
+                               value="{{ old('issue_date') }}"
+                               required>
                         @error('issue_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <!-- Expiry Date -->
-                    <div class="col-md-6">
+                    <!-- Expiry Date - Only for Passport -->
+                    <div class="col-md-6" id="expiryDateField" style="display: none;">
                         <label class="form-label">
                             <i class="fas fa-calendar-times text-primary me-1"></i> Expiry Date
                         </label>
                         <input type="date" 
+                               id="expiryDateInput"
                                name="expiry_date" 
                                class="form-control datetimepicker @error('expiry_date') is-invalid @enderror" 
                                value="{{ old('expiry_date') }}">
                         @error('expiry_date')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Issuing Authority -->
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            <i class="fas fa-building text-primary me-1"></i> Issuing Authority
-                        </label>
-                        <input type="text" 
-                               name="issuing_authority" 
-                               class="form-control @error('issuing_authority') is-invalid @enderror" 
-                               value="{{ old('issuing_authority') }}"
-                               placeholder="Enter issuing authority">
-                        @error('issuing_authority')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -123,7 +114,7 @@
                     </div>
 
                     <!-- Document Upload -->
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label class="form-label">
                             <i class="fas fa-file-upload text-primary me-1"></i> Document
                         </label>
@@ -167,4 +158,34 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('identificationType');
+    const expiryDateField = document.getElementById('expiryDateField');
+    const expiryDateInput = document.getElementById('expiryDateInput');
+
+    function toggleExpiryDate() {
+        const isPassport = typeSelect.value === 'passport';
+        expiryDateField.style.display = isPassport ? 'block' : 'none';
+        
+        // Toggle required attribute
+        expiryDateInput.required = isPassport;
+        
+        // Clear value if not passport
+        if (!isPassport) {
+            expiryDateInput.value = '';
+        }
+    }
+
+    // Initial check
+    toggleExpiryDate();
+
+    // Add change event listener
+    typeSelect.addEventListener('change', toggleExpiryDate);
+});
+</script>
+@endpush
+
 @endsection 

@@ -13,7 +13,7 @@
                         Course: <span class="fw-bold text-dark">{{ $subject->course->name }}</span>
                     </div>
                     <div>
-                        Subject: <span class="fw-bold text-dark">{{ $subject->name }}</span>
+                        Discipline: <span class="fw-bold text-dark">{{ $subject->name }}</span>
                         <span class="mx-2">•</span>
                         Code: <span class="fw-bold text-dark">{{ $subject->code }}</span>
                     </div>

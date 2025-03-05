@@ -23,6 +23,17 @@ return new class extends Migration
 
         // Create qualification levels using the model
         $qualificationLevels = [
+            //ordinary level
+            [
+                'name' => 'Ordinary Level',
+                'description' => 'Ordinary Level qualification'
+            ],
+            //advanced level
+            [
+                'name' => 'Advanced Level',
+                'description' => 'Advanced Level qualification'
+            ],
+            //certificate
             [
                 'name' => 'Certificate',
                 'description' => 'Certificate level qualification'
@@ -32,8 +43,8 @@ return new class extends Migration
                 'description' => 'Diploma level qualification'
             ],
             [
-                'name' => 'Advanced Diploma',
-                'description' => 'Advanced Diploma level qualification'
+                'name' => 'Higher National Diploma',
+                'description' => 'Higher National Diploma level qualification'
             ],
             [
                 'name' => "Bachelor's Degree",

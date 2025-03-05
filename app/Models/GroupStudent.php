@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupStudent extends Model
 {
-    //
-    protected $fillable = ['group_id', 'student_id', 'assessment_allocation_id'];
+    protected $fillable = ['group_id', 'student_id'];
 
     public function group()
     {
@@ -17,10 +16,5 @@ class GroupStudent extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
-    }
-
-    public function assessmentAllocation()
-    {
-        return $this->belongsTo(AssessmentAllocation::class);
     }
 }

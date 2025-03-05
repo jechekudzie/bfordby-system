@@ -58,7 +58,7 @@
                                             <a href="{{ route('admin.courses.subjects.index', $course) }}" 
                                                class="btn btn-link btn-sm text-primary p-0">
                                                 <i class="fas fa-book-open me-1"></i>
-                                                <span>View Subjects</span>
+                                                <span>View Disciplines</span>
                                             </a>
                                         </div>
                                     </div>

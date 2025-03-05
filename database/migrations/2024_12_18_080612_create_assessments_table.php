@@ -17,13 +17,12 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->enum('type', ['assignment', 'test', 'exam', 'practical', 'theory']);
-            $table->decimal('max_score', 5, 2);
+            $table->decimal('max_score', 5, 2)->nullable();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();
 
-        
         });
         
     }
