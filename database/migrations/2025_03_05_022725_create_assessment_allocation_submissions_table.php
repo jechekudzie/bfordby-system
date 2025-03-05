@@ -28,8 +28,6 @@ return new class extends Migration
             $table->timestamps();
 
 
-            // Ensure one submission per student per assessment
-            $table->unique(['assessment_allocation_id', 'student_id']);
         });
     }
 
