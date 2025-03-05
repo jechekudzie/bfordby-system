@@ -152,7 +152,7 @@
                      class="img-fluid mb-3" style="max-width: 200px;">
                 <h5 class="text-muted mb-2">No Allocations Found</h5>
                 <p class="text-muted mb-3">Start by adding your first allocation</p>
-                <a href="{{ route('modules.assessments.allocations.create', [$module, $assessment]) }}" 
+                <a href="{{ route('admin.modules.assessments.allocations.create', ['module' => $module, 'assessment' => $assessment]) }}" 
                    class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Add First Allocation
                 </a>
