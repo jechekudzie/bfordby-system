@@ -27,20 +27,6 @@ return new class extends Migration
             $table->enum('status', ['pending', 'in_progress', 'submitted', 'graded'])->default('pending');
             $table->timestamps();
 
-            $table->foreign('assessment_allocation_id')
-                  ->references('id')
-                  ->on('assessment_allocations')
-                  ->onDelete('cascade');
-            
-            $table->foreign('student_id')
-                  ->references('id')
-                  ->on('students')
-                  ->onDelete('cascade');
-
-            $table->foreign('group_id')
-                  ->references('id')
-                  ->on('groups')
-                  ->onDelete('set null');
 
             // Ensure one submission per student per assessment
             $table->unique(['assessment_allocation_id', 'student_id']);
