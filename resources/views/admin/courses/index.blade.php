@@ -1,5 +1,12 @@
 @extends('layouts.admin')
 
+@push('head')
+<!-- Datatable CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css" />
+@endpush
+
 @section('content')
 <div class="card">
     <div class="card-header bg-white">
@@ -33,7 +40,7 @@
         @endif
 
         <div class="table-responsive">
-            <table class="table table-hover align-middle" id="coursesTable">
+            <table class="table table-hover align-middle" id="buttons-datatables">
                 <thead class="bg-light">
                     <tr>
                         <th scope="col" style="width: 60px">#</th>
@@ -169,20 +176,16 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#coursesTable').DataTable({
-            dom: '<"d-flex justify-content-end"f>rt<"d-flex justify-content-between"lip>',
-            language: {
-                search: '<i class="fas fa-search text-muted me-2"></i>',
-                searchPlaceholder: 'Search courses...'
-            },
-            pageLength: 10,
-            ordering: true,
-            info: true,
-            lengthChange: true,
-            columnDefs: [
-                { orderable: false, targets: [5] } // Disable sorting on actions column
+        $('#buttons-datatables').DataTable({
+            responsive: true,
+            autoWidth: false,
+            order: [
+                [0, 'asc']
             ]
         });
     });
