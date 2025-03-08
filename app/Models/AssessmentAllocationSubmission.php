@@ -15,17 +15,20 @@ class AssessmentAllocationSubmission extends Model
         'group_id',
         'content',
         'answers',
+        'grades',
+        'feedback',
         'file_path',
         'start_time',
         'submitted_at',
         'graded_at',
         'grade',
-        'feedback',
         'status'
     ];
 
     protected $casts = [
         'answers' => 'array',
+        'grades' => 'array',
+        'feedback' => 'array',
         'start_time' => 'datetime',
         'submitted_at' => 'datetime',
         'graded_at' => 'datetime',

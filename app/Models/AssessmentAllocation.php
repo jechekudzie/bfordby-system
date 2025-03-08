@@ -35,4 +35,10 @@ class AssessmentAllocation extends Model
     {
         return $this->hasMany(Group::class);
     }
+
+    public function submissions()
+    {
+        return $this->hasMany(AssessmentAllocationSubmission::class);
+    }
+
 }

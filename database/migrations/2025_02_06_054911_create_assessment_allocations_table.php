@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('enrollment_code_id');
             $table->unsignedBigInteger('semester_id');
             $table->date('due_date')->nullable();
-            $table->enum('status', ['pending', 'open', 'closed'])->default('pending');
+            $table->enum('status', ['pending', 'open', 'in_progress', 'submitted', 'graded', 'closed'])->default('pending');
             $table->text('content')->nullable();
             $table->string('file_path')->nullable();
             $table->enum('submission_type', ['online', 'upload', 'in-class', 'group']);

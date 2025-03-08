@@ -111,10 +111,10 @@
                             <div class="mb-3">
                                 <i class="fas fa-user-check fa-2x text-success"></i>
                             </div>
-                            <h6>Enrollments</h6>
+                            <h6>Enrollment</h6>
                             <p class="text-muted mb-3">Total: {{ $enrollmentsCount }}</p>
-                            <a href="{{ route('students.courses', ['student' => 1]) }}" class="btn btn-success btn-sm">
-                                <i class="fas fa-list me-1"></i>View Enrollments
+                            <a href="{{ route('students.create') }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-list me-1"></i> Enroll Student
                             </a>
                         </div>
                     </div>

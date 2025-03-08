@@ -164,6 +164,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('semesters/{semester}/edit', [\App\Http\Controllers\SemesterController::class, 'edit'])->name('semesters.edit');
     Route::put('semesters/{semester}', [\App\Http\Controllers\SemesterController::class, 'update'])->name('semesters.update');
     Route::delete('semesters/{semester}', [\App\Http\Controllers\SemesterController::class, 'destroy'])->name('semesters.destroy');
+
+    // Assessment Allocations and Submissions
+    Route::prefix('assessment-allocations')->name('assessment-allocations.')->group(function () {
+        Route::get('{allocation}/submissions', [AssessmentAllocationSubmissionController::class, 'indexAdmin'])->name('submissions.index');
+        Route::get('{allocation}/submissions/{submission}/grade', [AssessmentAllocationSubmissionController::class, 'showGradeForm'])->name('submissions.grade');
+        Route::post('{allocation}/submissions/{submission}/grade', [AssessmentAllocationSubmissionController::class, 'storeGrades'])->name('submissions.store-grades');
+        Route::get('{allocation}/submissions/{submission}/download', [AssessmentAllocationSubmissionController::class, 'download'])->name('submissions.download');
+    });
 });
 
 Route::prefix('student')->group(function () {
@@ -197,12 +205,14 @@ Route::prefix('student')->group(function () {
 
     // Student Submissions
     Route::prefix('submissions')->name('students.submissions.')->group(function () {
+        Route::get('/{allocation}/create', [AssessmentAllocationSubmissionController::class, 'create'])->name('create');
+        Route::post('/{allocation}/start', [AssessmentAllocationSubmissionController::class, 'startTimed'])->name('start-timed');
+        Route::get('/{allocation}/download', [AssessmentAllocationSubmissionController::class, 'download'])->name('download');
         Route::get('/{allocation}', [AssessmentAllocationSubmissionController::class, 'show'])->name('show');
         Route::post('/{allocation}', [AssessmentAllocationSubmissionController::class, 'store'])->name('store');
         Route::put('/{allocation}', [AssessmentAllocationSubmissionController::class, 'update'])->name('update');
-        Route::get('/{allocation}/download', [AssessmentAllocationSubmissionController::class, 'download'])->name('download');
         Route::delete('/{allocation}', [AssessmentAllocationSubmissionController::class, 'destroy'])->name('destroy');
-        Route::post('/{allocation}/start', [AssessmentAllocationSubmissionController::class, 'startTimed'])->name('start-timed');
+        Route::get('/{allocation}/view-answers', [AssessmentAllocationSubmissionController::class, 'viewAnswers'])->name('view-answers');
     });
 
     // Student Academic History
@@ -330,6 +340,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
 });
 
 require __DIR__ . '/auth.php';

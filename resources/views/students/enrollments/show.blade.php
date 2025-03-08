@@ -178,6 +178,33 @@
                                                             </thead>
                                                             <tbody>
                                                                 @foreach($semesterAllocations as $allocation)
+                                                                    @php
+                                                                        // Check if student has a completed submission for this allocation
+                                                                        $submission = \App\Models\AssessmentAllocationSubmission::where([
+                                                                            'assessment_allocation_id' => $allocation->id,
+                                                                            'student_id' => $enrollment->student_id
+                                                                        ])->first();
+                                                                        
+                                                                        $isSubmitted = $submission && ($submission->status === 'submitted' || $submission->status === 'graded');
+                                                                    @endphp
+                                                                    
+                                                                    @if(!$isSubmitted && ($allocation->status === 'open' || $allocation->status === 'pending'))
+                                                                    <tr>
+                                                                        <td colspan="6" class="p-0 border-bottom-0">
+                                                                            @if($allocation->submission_type === 'group')
+                                                                                <a href="{{ route('students.submissions.create', ['allocation' => $allocation, 'group' => 1]) }}" 
+                                                                                   class="btn btn-success w-100 rounded-0 d-flex align-items-center justify-content-center">
+                                                                                    <i class="fas fa-users me-2"></i> Submit Group Assignment
+                                                                                </a>
+                                                                            @else
+                                                                                <a href="{{ route('students.submissions.create', ['allocation' => $allocation]) }}" 
+                                                                                   class="btn btn-success w-100 rounded-0 d-flex align-items-center justify-content-center">
+                                                                                    <i class="fas fa-paper-plane me-2"></i> Submit Assessment
+                                                                                </a>
+                                                                            @endif
+                                                                        </td>
+                                                                    </tr>
+                                                                    @endif
                                                                     <tr>
                                                                         <td>
                                                                             <div class="d-flex flex-column">
@@ -207,7 +234,7 @@
                                                                                         {{ ucfirst($allocation->submission_type) }}
                                                                                     @endif
                                                                                 </span>
-                                                                                @if($allocation->is_group_submission)
+                                                                                @if($allocation->submission_type === 'group')
                                                                                     <small class="text-muted">
                                                                                         <i class="fas fa-users me-1"></i>Group Submission
                                                                                     </small>
@@ -228,9 +255,8 @@
                                                                         <td>
                                                                             <div class="d-flex flex-column">
                                                                                 <span class="badge bg-{{ 
-                                                                                    $allocation->status === 'graded' ? 'success' : 
-                                                                                    ($allocation->status === 'submitted' ? 'info' : 
-                                                                                    ($allocation->status === 'in_progress' ? 'warning' : 'secondary')) 
+                                                                                    $allocation->status === 'closed' ? 'success' : 
+                                                                                    ($allocation->status === 'open' ? 'warning' : 'secondary') 
                                                                                 }} mb-1">
                                                                                     <i class="fas fa-circle me-1 small"></i>
                                                                                     {{ ucfirst($allocation->status) }}
@@ -244,32 +270,23 @@
                                                                         </td>
                                                                         <td>
                                                                             <div class="d-flex flex-column gap-2">
-                                                                                @if($allocation->status === 'pending')
-                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
-                                                                                       class="btn btn-primary btn-sm w-100">
-                                                                                        @if($allocation->submission_type === 'online')
-                                                                                            <i class="fas fa-edit me-1"></i>Take Assessment
-                                                                                        @elseif($allocation->submission_type === 'file')
-                                                                                            <i class="fas fa-upload me-1"></i>Upload File
-                                                                                        @else
-                                                                                            <i class="fas fa-paper-plane me-1"></i>Submit
-                                                                                        @endif
+                                                                                @if($isSubmitted)
+                                                                                    <a href="{{ route('students.submissions.view-answers', $allocation) }}" 
+                                                                                       class="btn btn-primary">
+                                                                                        <i class="fas fa-eye me-1"></i> View Answers
                                                                                     </a>
-                                                                                @elseif($allocation->status === 'in_progress')
-                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
-                                                                                       class="btn btn-warning btn-sm w-100">
-                                                                                        <i class="fas fa-hourglass-half me-1"></i>Continue
-                                                                                    </a>
-                                                                                @elseif($allocation->status === 'submitted')
-                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
-                                                                                       class="btn btn-info btn-sm w-100">
-                                                                                        <i class="fas fa-eye me-1"></i>View
-                                                                                    </a>
-                                                                                @elseif($allocation->status === 'graded')
-                                                                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
-                                                                                       class="btn btn-success btn-sm w-100">
-                                                                                        <i class="fas fa-check-double me-1"></i>View Grade
-                                                                                    </a>
+                                                                                @else
+                                                                                    @if($allocation->submission_type === 'group')
+                                                                                        <a href="{{ route('students.submissions.create', ['allocation' => $allocation, 'group' => 1]) }}" 
+                                                                                           class="btn btn-success">
+                                                                                            <i class="fas fa-users me-1"></i> Submit Group Assignment
+                                                                                        </a>
+                                                                                    @else
+                                                                                        <a href="{{ route('students.submissions.create', ['allocation' => $allocation]) }}" 
+                                                                                           class="btn btn-success">
+                                                                                            <i class="fas fa-paper-plane me-1"></i> Submit Assessment
+                                                                                        </a>
+                                                                                    @endif
                                                                                 @endif
 
                                                                                 @if($allocation->assessment->description)
@@ -450,15 +467,33 @@
                                 @endif
                             </div>
                             <div class="modal-footer">
-                                @if($allocation->status === 'pending')
-                                    <a href="{{ route('students.submissions.show', $allocation) }}" 
+                                @php
+                                    // Check if student has a completed submission for this allocation
+                                    $submission = \App\Models\AssessmentAllocationSubmission::where([
+                                        'assessment_allocation_id' => $allocation->id,
+                                        'student_id' => $enrollment->student_id
+                                    ])->first();
+                                    
+                                    $isSubmitted = $submission && ($submission->status === 'submitted' || $submission->status === 'graded');
+                                @endphp
+
+                                @if($isSubmitted)
+                                    <a href="{{ route('students.submissions.view-answers', $allocation) }}" 
                                        class="btn btn-primary">
-                                        @if($allocation->submission_type === 'online')
-                                            <i class="fas fa-edit me-1"></i>Start Assessment
-                                        @else
-                                            <i class="fas fa-paper-plane me-1"></i>Submit Now
-                                        @endif
+                                        <i class="fas fa-eye me-1"></i> View Answers
                                     </a>
+                                @else
+                                    @if($allocation->submission_type === 'group')
+                                        <a href="{{ route('students.submissions.create', ['allocation' => $allocation, 'group' => 1]) }}" 
+                                           class="btn btn-success">
+                                            <i class="fas fa-users me-1"></i> Submit Group Assignment
+                                        </a>
+                                    @else
+                                        <a href="{{ route('students.submissions.create', ['allocation' => $allocation]) }}" 
+                                           class="btn btn-success">
+                                            <i class="fas fa-paper-plane me-1"></i> Submit Assessment
+                                        </a>
+                                    @endif
                                 @endif
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>

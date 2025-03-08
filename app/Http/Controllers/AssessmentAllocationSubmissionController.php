@@ -24,7 +24,7 @@ class AssessmentAllocationSubmissionController extends Controller
 
         // Check if this is a group submission
         $group = null;
-        if ($allocation->is_group_submission) {
+        if ($allocation->submission_type === 'group') {
             $group = $student->groups()->where('assessment_allocation_id', $allocation->id)->first();
             if (!$group && $allocation->due_date > now()) {
                 return redirect()->route('assessment-allocation-groups.index', $allocation)
@@ -53,8 +53,11 @@ class AssessmentAllocationSubmissionController extends Controller
             // Validate submission timing and state
             $this->validateSubmissionState($submission, $allocation);
             
+            // Check if this is a group submission
+            $isGroupSubmission = $request->has('group_submission') && $request->group_submission == 1;
+            
             // Handle group submission
-            if ($allocation->is_group_submission) {
+            if ($allocation->submission_type === 'group' || $isGroupSubmission) {
                 $group = $student->groups()->where('assessment_allocation_id', $allocation->id)->firstOrFail();
                 $submission->group_id = $group->id;
             }
@@ -66,15 +69,57 @@ class AssessmentAllocationSubmissionController extends Controller
             $submission->status = 'submitted';
             $submission->submitted_at = now();
             $submission->save();
+            
+            // If this is a group submission, create submissions for all group members
+            if (($allocation->submission_type === 'group' || $isGroupSubmission) && $submission->group_id) {
+                $group = Group::with('students')->find($submission->group_id);
+                if ($group) {
+                    foreach ($group->students as $groupMember) {
+                        // Skip the submitting student as they already have a submission
+                        if ($groupMember->id === $student->id) {
+                            continue;
+                        }
+                        
+                        // Create a copy of the submission for this group member
+                        $memberSubmission = new AssessmentAllocationSubmission();
+                        $memberSubmission->assessment_allocation_id = $allocation->id;
+                        $memberSubmission->student_id = $groupMember->id;
+                        $memberSubmission->group_id = $group->id;
+                        $memberSubmission->status = 'submitted';
+                        $memberSubmission->submitted_at = now();
+                        
+                        // Copy submission content
+                        if ($submission->file_path) {
+                            $memberSubmission->file_path = $submission->file_path;
+                        }
+                        if ($submission->answers) {
+                            $memberSubmission->answers = $submission->answers;
+                        }
+                        if ($submission->content) {
+                            $memberSubmission->content = $submission->content;
+                        }
+                        
+                        $memberSubmission->save();
+                    }
+                }
+            }
 
-            // Get the enrollment through the allocation's module
-            $enrollment = $allocation->module->enrollments()
-                ->where('student_id', $student->id)
-                ->first();
+            // First, find the enrollment code from the allocation
+            $enrollmentCode = $allocation->enrollmentCode;
+
+            // Then find the enrollment associated with this student and enrollment code
+            if ($enrollmentCode) {
+                $enrollment = $student->enrollments()
+                    ->where('enrollment_code_id', $enrollmentCode->id)
+                    ->first();
+            } else {
+                // Fallback - get the first enrollment
+                $enrollment = $student->enrollments()->first();
+            }
 
             return redirect()->route('students.enrollments.show', [
                 'student' => $student,
-                'enrollment' => $enrollment
+                'enrollment' => $enrollment ?? $student->enrollments()->first()
             ])->with('success', 'Assessment submitted successfully.');
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -124,7 +169,15 @@ class AssessmentAllocationSubmissionController extends Controller
             abort(404, 'Submission file not found.');
         }
 
-        return Storage::download($submission->file_path);
+        $filename = basename($submission->file_path);
+        $headers = [
+            'Content-Type' => Storage::mimeType($submission->file_path),
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+        ];
+
+        return Storage::response($submission->file_path, $filename, $headers);
     }
 
     /**
@@ -148,7 +201,7 @@ class AssessmentAllocationSubmissionController extends Controller
         $submission->status = 'in_progress';
         $submission->save();
 
-        return redirect()->route('students.submissions.show', $allocation);
+        return redirect()->route('students.submissions.create', $allocation);
     }
 
     /**
@@ -175,6 +228,357 @@ class AssessmentAllocationSubmissionController extends Controller
 
         return redirect()->route('students.submissions.show', $allocation)
             ->with('success', 'Submission deleted successfully.');
+    }
+
+    /**
+     * Display the submission form for creating a new submission.
+     */
+    public function create(Request $request, AssessmentAllocation $allocation)
+    {
+        // For demo purposes, get the first student
+        $student = Student::first();
+        
+        // Check if there's an existing submission
+        $submission = $this->getOrInitializeSubmission($student, $allocation);
+
+        // Check if this is a group submission
+        $group = null;
+        $isGroupSubmission = $request->has('group') && $request->group == 1;
+        
+        if ($allocation->submission_type === 'group' || $isGroupSubmission) {
+            $group = $student->groups()->where('assessment_allocation_id', $allocation->id)->first();
+            if (!$group && $allocation->due_date > now()) {
+                return redirect()->route('assessment-allocation-groups.index', $allocation)
+                    ->with('warning', 'You need to join or create a group first.');
+            }
+        }
+
+        // For timed assessments that haven't started, show the warning page
+        if ($allocation->is_timed && !$submission->start_time) {
+            return view('students.submissions.create', compact('allocation', 'submission', 'group', 'student', 'isGroupSubmission'));
+        }
+
+        // Determine which view to use based on submission type
+        $view = match($allocation->submission_type) {
+            'upload' => 'students.submissions.types.upload',
+            'online' => 'students.submissions.types.online',
+            'in-class' => 'students.submissions.types.in-class',
+            'group' => 'students.submissions.types.' . ($allocation->questions->isNotEmpty() ? 'online' : 'upload'),
+            default => 'students.submissions.types.online'
+        };
+
+        return view($view, compact('allocation', 'submission', 'group', 'student', 'isGroupSubmission'));
+    }
+
+    /**
+     * Display the submitted answers for review.
+     */
+    public function viewAnswers(AssessmentAllocation $allocation)
+    {
+        // For demo purposes, get the first student
+        $student = Student::first();
+        
+        // Get the submission
+        $submission = AssessmentAllocationSubmission::where([
+            'assessment_allocation_id' => $allocation->id,
+            'student_id' => $student->id
+        ])->firstOrFail();
+        
+        // Check if this is a group submission
+        $group = null;
+        if ($allocation->submission_type === 'group') {
+            $group = $student->groups()->where('assessment_allocation_id', $allocation->id)->first();
+        }
+        
+        return view('students.submissions.view-answers', compact('allocation', 'submission', 'group', 'student'));
+    }
+
+    /**
+     * Show the grading form for a submission.
+     */
+    public function showGradeForm(AssessmentAllocation $allocation, AssessmentAllocationSubmission $submission)
+    {
+        // Ensure the submission belongs to this allocation
+        if ($submission->assessment_allocation_id !== $allocation->id) {
+            abort(404);
+        }
+
+        // Get group information if this is a group submission
+        $group = null;
+        $groupMembers = [];
+        if ($submission->group_id) {
+            $group = Group::with('students')->find($submission->group_id);
+            if ($group) {
+                $groupMembers = $group->students;
+            }
+        }
+
+        // For upload submissions or group submissions with uploads, use a dedicated view
+        if ($allocation->submission_type === 'upload' || 
+            ($allocation->submission_type === 'group' && (!$allocation->questions || $allocation->questions->isEmpty()))) {
+            
+            // Set a default percentage grade if not already graded
+            $percentageGrade = $submission->grade ?? 0;
+            
+            // Extract weights from feedback if they exist
+            $weights = [];
+            if (!empty($submission->feedback)) {
+                foreach ($submission->feedback as $key => $value) {
+                    if (strpos($key, 'weight_') === 0) {
+                        $index = substr($key, 7); // Remove 'weight_' prefix
+                        $weights[$index] = $value;
+                    }
+                }
+            }
+            
+            return view('admin.submissions.types.upload_grade', compact(
+                'submission', 
+                'allocation', 
+                'percentageGrade', 
+                'weights', 
+                'group', 
+                'groupMembers'
+            ));
+        }
+
+        // For other submission types with questions
+        $gradeData = [];
+        $totalMaxScore = 0;
+        $totalScore = 0;
+        
+        foreach ($allocation->questions as $question) {
+            $answer = $submission->answers[$question->id] ?? null;
+            $maxScore = $question->weight;
+            $totalMaxScore += $maxScore;
+            
+            // Initial score is 0
+            $score = 0;
+            
+            if ($answer && $question->question_type === 'multiple_choice') {
+                // Get correct option
+                $correctOption = $question->options()->where('is_correct', true)->first();
+                if ($correctOption && $answer == $correctOption->id) {
+                    $score = $maxScore;
+                }
+            }
+            
+            // If already graded, use the existing score
+            if (isset($submission->grades[$question->id])) {
+                $score = $submission->grades[$question->id];
+            }
+            
+            $totalScore += $score;
+            $gradeData[$question->id] = [
+                'score' => $score,
+                'max_score' => $maxScore,
+                'feedback' => $submission->feedback[$question->id] ?? ''
+            ];
+        }
+        
+        // Calculate initial percentage grade
+        $percentageGrade = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        
+        return view('admin.submissions.grade', compact(
+            'submission', 
+            'allocation', 
+            'gradeData', 
+            'percentageGrade', 
+            'group', 
+            'groupMembers'
+        ));
+    }
+
+    /**
+     * Store grades for a submission.
+     */
+    public function storeGrades(Request $request, AssessmentAllocation $allocation, AssessmentAllocationSubmission $submission)
+    {
+        // Ensure the submission belongs to this allocation
+        if ($submission->assessment_allocation_id !== $allocation->id) {
+            abort(404);
+        }
+        
+        // Check if this is a group submission
+        $isGroupSubmission = $submission->group_id !== null;
+        $groupMembers = [];
+        
+        if ($isGroupSubmission) {
+            // Get all students in the group
+            $group = Group::with('students')->find($submission->group_id);
+            if ($group) {
+                $groupMembers = $group->students;
+            }
+        }
+        
+        // For upload submissions or group submissions with uploads
+        if ($allocation->submission_type === 'upload' || 
+            ($allocation->submission_type === 'group' && (!$allocation->questions || $allocation->questions->isEmpty()))) {
+            
+            // Validate the request
+            $request->validate([
+                'grades' => 'required|array',
+                'grades.*' => 'required|numeric|min:0',
+                'weights' => 'required|array',
+                'weights.*' => 'required|numeric|min:1',
+                'feedback' => 'nullable|array',
+                'general_feedback' => 'nullable|string'
+            ]);
+            
+            $grades = $request->input('grades');
+            $weights = $request->input('weights');
+            $feedback = $request->input('feedback') ?? [];
+            
+            // Calculate total score and percentage
+            $totalScore = 0;
+            $totalMaxScore = 0;
+            
+            foreach ($grades as $index => $score) {
+                $weight = $weights[$index] ?? 10;
+                $totalMaxScore += $weight;
+                
+                // Ensure score doesn't exceed weight
+                $grades[$index] = min((float)$score, (float)$weight);
+                $totalScore += $grades[$index];
+                
+                // Store the weight in the feedback JSON
+                $feedback["weight_{$index}"] = $weight;
+            }
+            
+            // Add general feedback if provided
+            if ($request->has('general_feedback')) {
+                $feedback['general'] = $request->input('general_feedback');
+            }
+            
+            // Calculate percentage grade
+            $percentageGrade = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+            
+            // Update the submission
+            $submission->grades = $grades;
+            $submission->feedback = $feedback;
+            $submission->grade = round($percentageGrade, 2); // Store as percentage with 2 decimal places
+            $submission->status = 'graded';
+            $submission->graded_at = now();
+            $submission->save();
+            
+            // If this is a group submission, update grades for all group members
+            if ($isGroupSubmission && count($groupMembers) > 0) {
+                foreach ($groupMembers as $student) {
+                    // Skip the student who owns the current submission
+                    if ($student->id === $submission->student_id) {
+                        continue;
+                    }
+                    
+                    // Find or create a submission for this student
+                    $studentSubmission = AssessmentAllocationSubmission::firstOrCreate([
+                        'assessment_allocation_id' => $allocation->id,
+                        'student_id' => $student->id,
+                        'group_id' => $submission->group_id
+                    ]);
+                    
+                    // Copy the grades and feedback
+                    $studentSubmission->grades = $grades;
+                    $studentSubmission->feedback = $feedback;
+                    $studentSubmission->grade = round($percentageGrade, 2);
+                    $studentSubmission->status = 'graded';
+                    $studentSubmission->graded_at = now();
+                    $studentSubmission->file_path = $submission->file_path; // Copy the file path
+                    $studentSubmission->submitted_at = $submission->submitted_at;
+                    $studentSubmission->save();
+                }
+            }
+            
+            return redirect()->route('admin.assessment-allocations.submissions.index', $allocation)
+                ->with('success', 'Submission graded successfully.');
+        }
+        
+        // For other submission types with questions
+        // Validate the request
+        $request->validate([
+            'grades' => 'required|array',
+            'grades.*' => 'required|numeric|min:0',
+            'feedback' => 'nullable|array',
+            'general_feedback' => 'nullable|string'
+        ]);
+        
+        // Calculate total score
+        $totalScore = 0;
+        $totalMaxScore = 0;
+        $grades = [];
+        $feedback = [];
+        
+        foreach ($allocation->questions as $question) {
+            $questionId = $question->id;
+            $maxScore = $question->weight;
+            $totalMaxScore += $maxScore;
+            
+            // Get the score for this question (capped at max score)
+            $score = min($request->input("grades.$questionId", 0), $maxScore);
+            $grades[$questionId] = $score;
+            $totalScore += $score;
+            
+            // Store feedback if provided
+            if ($request->has("feedback.$questionId")) {
+                $feedback[$questionId] = $request->input("feedback.$questionId");
+            }
+        }
+        
+        // Add general feedback if provided
+        if ($request->has('general_feedback')) {
+            $feedback['general'] = $request->input('general_feedback');
+        }
+        
+        // Calculate percentage grade
+        $percentageGrade = $totalMaxScore > 0 ? ($totalScore / $totalMaxScore) * 100 : 0;
+        
+        // Update the submission
+        $submission->grades = $grades;
+        $submission->feedback = $feedback;
+        $submission->grade = round($percentageGrade, 2); // Store as percentage with 2 decimal places
+        $submission->status = 'graded';
+        $submission->graded_at = now();
+        $submission->save();
+        
+        // If this is a group submission, update grades for all group members
+        if ($isGroupSubmission && count($groupMembers) > 0) {
+            foreach ($groupMembers as $student) {
+                // Skip the student who owns the current submission
+                if ($student->id === $submission->student_id) {
+                    continue;
+                }
+                
+                // Find or create a submission for this student
+                $studentSubmission = AssessmentAllocationSubmission::firstOrCreate([
+                    'assessment_allocation_id' => $allocation->id,
+                    'student_id' => $student->id,
+                    'group_id' => $submission->group_id
+                ]);
+                
+                // Copy the grades and feedback
+                $studentSubmission->grades = $grades;
+                $studentSubmission->feedback = $feedback;
+                $studentSubmission->grade = round($percentageGrade, 2);
+                $studentSubmission->status = 'graded';
+                $studentSubmission->graded_at = now();
+                $studentSubmission->answers = $submission->answers; // Copy the answers
+                $studentSubmission->submitted_at = $submission->submitted_at;
+                $studentSubmission->save();
+            }
+        }
+        
+        return redirect()->route('admin.assessment-allocations.submissions.index', $allocation)
+            ->with('success', 'Submission graded successfully.');
+    }
+
+    /**
+     * Display a listing of submissions for an assessment (admin view).
+     */
+    public function indexAdmin(AssessmentAllocation $allocation)
+    {
+        $submissions = AssessmentAllocationSubmission::where('assessment_allocation_id', $allocation->id)
+            ->with('student')
+            ->paginate(15);
+        
+        return view('admin.submissions.index', compact('allocation', 'submissions'));
     }
 
     // Private helper methods
@@ -236,7 +640,17 @@ class AssessmentAllocationSubmissionController extends Controller
 
         // Handle online or text submissions
         if ($request->has('answers')) {
-            $submission->answers = $request->answers;
+            // Ensure answers is stored as an array
+            $answers = $request->answers;
+            if (is_array($answers)) {
+                // Convert any empty strings to null to avoid issues
+                foreach ($answers as $key => $value) {
+                    if ($value === '') {
+                        $answers[$key] = null;
+                    }
+                }
+                $submission->answers = $answers;
+            }
         }
         if ($request->has('content')) {
             $submission->content = $request->content;
@@ -249,7 +663,7 @@ class AssessmentAllocationSubmissionController extends Controller
         $messages = [];
 
         switch ($allocation->submission_type) {
-            case 'file':
+            case 'upload':
                 $rules['file'] = ['required', 'file', 'max:10240']; // 10MB max
                 $messages['file.max'] = 'The file must not be larger than 10MB.';
                 break;
@@ -257,8 +671,18 @@ class AssessmentAllocationSubmissionController extends Controller
                 $rules['answers'] = ['required', 'array'];
                 $rules['answers.*'] = ['required', 'string'];
                 break;
-            case 'text':
+            case 'in-class':
                 $rules['content'] = ['required', 'string', 'max:10000'];
+                break;
+            case 'group':
+                // For group submissions, check if it's a file upload or online submission
+                if ($allocation->questions->isNotEmpty()) {
+                    $rules['answers'] = ['required', 'array'];
+                    $rules['answers.*'] = ['required', 'string'];
+                } else {
+                    $rules['file'] = ['required', 'file', 'max:10240']; // 10MB max
+                    $messages['file.max'] = 'The file must not be larger than 10MB.';
+                }
                 break;
             default:
                 throw ValidationException::withMessages(['type' => 'Invalid submission type.']);

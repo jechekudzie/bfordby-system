@@ -107,34 +107,44 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('admin.assessment-allocation-questions.index', $allocation) }}" 
-                                           class="btn btn-outline-primary" 
-                                           title="Manage Questions">
-                                            <i class="fas fa-question-circle"></i>
-                                        </a>
-                                        @if($allocation->submission_type === 'group')
-                                        <a href="{{ route('admin.assessment-allocation-groups.index', $allocation) }}" 
-                                           class="btn btn-outline-success" 
-                                           title="Manage Groups">
-                                            <i class="fas fa-users"></i>
-                                        </a>
-                                        @endif
-                                        <a href="{{ route('admin.modules.assessments.allocations.edit', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
-                                           class="btn btn-outline-primary" 
-                                           title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('admin.modules.assessments.allocations.destroy', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
-                                              method="POST" 
-                                              class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this allocation?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                    <div class="d-flex align-items-center justify-content-start gap-2">
+                                        <div class="btn-group btn-group-sm me-1">
+                                            <a href="{{ route('admin.assessment-allocation-questions.index', $allocation) }}" 
+                                               class="btn btn-outline-primary" 
+                                               title="Manage Questions">
+                                                <i class="fas fa-question-circle"></i>
+                                            </a>
+                                            @if($allocation->submission_type === 'group')
+                                            <a href="{{ route('admin.assessment-allocation-groups.index', $allocation) }}" 
+                                               class="btn btn-outline-success" 
+                                               title="Manage Groups">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                            @endif
+                                            <a href="{{ route('admin.modules.assessments.allocations.edit', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
+                                               class="btn btn-outline-primary" 
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ route('admin.assessment-allocations.submissions.index', ['allocation' => $allocation]) }}" 
+                                               class="btn btn-primary"
+                                               title="View Submissions">
+                                                <i class="fas fa-clipboard-check me-1"></i>
+                                            </a>
+                                            <form action="{{ route('admin.modules.assessments.allocations.destroy', [$allocation->assessment->module, $allocation->assessment, $allocation]) }}" 
+                                                  method="POST" 
+                                                  class="btn-group"
+                                                  onsubmit="return confirm('Are you sure you want to delete this allocation?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                    <i class="fas fa-trash me-1"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

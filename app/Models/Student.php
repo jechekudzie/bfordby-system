@@ -105,8 +105,10 @@ class Student extends Model
         return $this->belongsToMany(Course::class, 'enrollments');
     }
 
-
- 
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_students');
+    }
 
     public function getSlugOptions() : SlugOptions
     {

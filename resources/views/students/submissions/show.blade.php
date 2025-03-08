@@ -30,6 +30,33 @@
         <div class="card-body">
             {{-- Assessment Details --}}
             <div class="row g-4 mb-4">
+                @if($submission->status === 'pending')
+                    <div class="col-12">
+                        <div class="alert alert-primary d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1"><i class="fas fa-info-circle me-2"></i>Ready to Submit?</h5>
+                                <p class="mb-0">You can now submit your assessment. Make sure to review all requirements before submitting.</p>
+                            </div>
+                            @if($allocation->submission_type === 'online' && $allocation->is_timed)
+                                <form action="{{ route('students.submissions.start-timed', $allocation) }}" method="POST" class="ms-3">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-clock me-2"></i>Start Timed Assessment
+                                    </button>
+                                </form>
+                            @else
+                                <a href="#submissionForm" class="btn btn-primary btn-lg">
+                                    @if($allocation->submission_type === 'file')
+                                        <i class="fas fa-upload me-2"></i>Upload Submission
+                                    @else
+                                        <i class="fas fa-paper-plane me-2"></i>Submit Assessment
+                                    @endif
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3">
                         <h6 class="text-primary mb-3">Assessment Details</h6>
@@ -204,9 +231,13 @@
                         @endif
 
                         <div class="d-flex justify-content-between align-items-center">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-paper-plane me-2"></i>
+                                @if(isset($group) && $group)
+                                {{ $submission->id ? 'Update Group Submission' : 'Submit Group Assignment' }}
+                                @else
                                 {{ $submission->id ? 'Update Submission' : 'Submit Assessment' }}
+                                @endif
                             </button>
                             @if($submission->id && !$submission->graded_at)
                                 <form action="{{ route('students.submissions.destroy', $allocation) }}" 
