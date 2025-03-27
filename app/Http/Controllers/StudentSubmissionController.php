@@ -27,14 +27,27 @@ class StudentSubmissionController extends Controller
             'answers.*' => 'required_if:submission_type,online|nullable|string'
         ]);
 
-        $submission = new StudentSubmission();
-        $submission->student_id = auth()->user()->student->id;
-        $submission->assessment_allocation_id = $allocation->id;
+        // Check if there's an existing submission
+        $submission = StudentSubmission::where('student_id', auth()->user()->student->id)
+            ->where('assessment_allocation_id', $allocation->id)
+            ->first();
+
+        if (!$submission) {
+            $submission = new StudentSubmission();
+            $submission->student_id = auth()->user()->student->id;
+            $submission->assessment_allocation_id = $allocation->id;
+        } elseif ($submission->status === 'submitted') {
+            return back()->with('error', 'You have already submitted this assessment.');
+        }
         
         // Handle different submission types
         switch ($allocation->submission_type) {
             case 'upload':
                 if ($request->hasFile('file')) {
+                    // Delete old file if it exists
+                    if ($submission->file_path) {
+                        Storage::disk('public')->delete($submission->file_path);
+                    }
                     $submission->file_path = $request->file('file')->store('submissions', 'public');
                 }
                 break;
@@ -45,13 +58,50 @@ class StudentSubmissionController extends Controller
                 $submission->content = $validated['content'];
         }
 
+        // Mark as submitted
         $submission->status = 'submitted';
         $submission->submitted_at = now();
         $submission->save();
 
-        return redirect()
-            ->route('students.enrollments.show', $allocation->enrollmentCode->enrollment)
-            ->with('success', 'Assessment submitted successfully.');
+        // Find the enrollment using the same robust lookup logic
+        $student = auth()->user()->student;
+        $enrollment = null;
+
+        // Try to find the enrollment in this order:
+        // 1. By enrollment code if available
+        // 2. By course if the assessment is linked to a course
+        // 3. Latest enrollment for the student
+        if ($allocation->enrollmentCode) {
+            $enrollment = $student->enrollments()
+                ->where('enrollment_code_id', $allocation->enrollmentCode->id)
+                ->first();
+        }
+        
+        if (!$enrollment && $allocation->assessment && $allocation->assessment->module && $allocation->assessment->module->subject) {
+            $courseId = $allocation->assessment->module->subject->course_id;
+            $enrollment = $student->enrollments()
+                ->where('course_id', $courseId)
+                ->latest()
+                ->first();
+        }
+        
+        if (!$enrollment) {
+            $enrollment = $student->enrollments()
+                ->latest()
+                ->first();
+        }
+
+        if (!$enrollment) {
+            // If no enrollment is found, redirect to a safe fallback route
+            return redirect()->route('students.index')
+                ->with('success', 'Assessment submitted successfully.')
+                ->with('warning', 'Could not find associated enrollment details.');
+        }
+
+        return redirect()->route('students.enrollments.show', [
+            'student' => $student,
+            'enrollment' => $enrollment
+        ])->with('success', 'Assessment submitted successfully.');
     }
 
     public function update(Request $request, AssessmentAllocation $allocation, StudentSubmission $submission)
@@ -59,4 +109,4 @@ class StudentSubmissionController extends Controller
         // Similar validation and logic as store, but for updates
         // This allows students to update their submission before the due date
     }
-} 
+}

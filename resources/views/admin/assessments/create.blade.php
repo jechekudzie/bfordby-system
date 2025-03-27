@@ -55,12 +55,15 @@
                             name="type" 
                             required>
                         <option value="">Select Type</option>
-                        <option value="assignment" {{ old('type') == 'assignment' ? 'selected' : '' }}>Assignment</option>
-                        <option value="test" {{ old('type') == 'test' ? 'selected' : '' }}>Test</option>
-                        <option value="exam" {{ old('type') == 'exam' ? 'selected' : '' }}>Exam</option>
-                        <option value="practical" {{ old('type') == 'practical' ? 'selected' : '' }}>Practical</option>
-                        <option value="theory" {{ old('type') == 'theory' ? 'selected' : '' }}>Theory</option>
+                        @foreach($assessmentWeights as $type => $weight)
+                            <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
+                                {{ $type }} ({{ $weight }}%)
+                            </option>
+                        @endforeach
                     </select>
+                    <div class="form-text text-muted">
+                        The percentage indicates this assessment type's contribution to the final grade
+                    </div>
                     @error('type')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -120,4 +123,4 @@
         </form>
     </div>
 </div>
-@endsection 
+@endsection

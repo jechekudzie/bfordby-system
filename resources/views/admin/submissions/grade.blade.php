@@ -48,9 +48,32 @@
                             <span class="text-muted">Current Score:</span>
                             <span class="fw-bold" id="current-score">0/{{ array_sum(array_column($gradeData, 'max_score')) }}</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted">Percentage:</span>
                             <span class="fw-bold text-primary" id="percentage-grade">{{ number_format($percentageGrade, 2) }}%</span>
+                        </div>
+                        <hr>
+                        <div class="contribution-info">
+                            <h6 class="text-muted mb-3">Grade Contribution</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted">Assessment Type Weight:</small>
+                                    <span class="badge bg-info">{{ $contributionWeight }}%</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">Trimester Weight:</small>
+                                    <span class="badge bg-secondary">{{ $trimesterWeight }}%</span>
+                                </div>
+                            </div>
+                            <div class="alert alert-light border p-2 mb-0">
+                                <small class="d-block text-muted mb-1">Contribution to Final Grade:</small>
+                                <span class="fw-bold text-primary">
+                                    {{ number_format(($percentageGrade * $contributionWeight * $trimesterWeight) / 10000, 2) }}%
+                                </span>
+                                <small class="d-block text-muted mt-1">
+                                    (Grade × Type Weight × Trimester Weight)
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -282,10 +305,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const percentageGrade = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
         
+        // Get contribution weights
+        const contributionWeight = parseFloat('{{ $contributionWeight }}');
+        const trimesterWeight = parseFloat('{{ $trimesterWeight }}');
+        
+        // Calculate final contribution
+        const finalContribution = (percentageGrade * contributionWeight * trimesterWeight) / 10000;
+        
         // Update the display with the new values
         currentScoreElement.textContent = `${totalScore.toFixed(1)}/${totalMaxScore.toFixed(1)}`;
         percentageGradeElement.textContent = `${percentageGrade.toFixed(2)}%`;
         progressBar.style.width = `${percentageGrade}%`;
+        
+        // Update contribution display
+        document.querySelector('.contribution-info .fw-bold.text-primary').textContent = 
+            `${finalContribution.toFixed(2)}%`;
     }
     
     // Add event listeners for both input and change events

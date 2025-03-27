@@ -12,6 +12,20 @@
                     <div class="mb-1">
                         Module: <span class="fw-bold text-dark">{{ $module->name }}</span>
                     </div>
+                    <div class="mt-2">
+                        <div class="mb-1">
+                            <strong class="text-dark">Assessment Type Weights:</strong>
+                            @foreach($assessmentWeights as $type => $weight)
+                                <span class="badge bg-info me-2">{{ $type }}: {{ $weight }}%</span>
+                            @endforeach
+                        </div>
+                        <div>
+                            <strong class="text-dark">Trimester Weights:</strong>
+                            @foreach($trimesterWeights as $trimester => $weight)
+                                <span class="badge bg-secondary me-2">{{ $trimester }}: {{ $weight }}%</span>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="d-flex gap-2">
@@ -60,12 +74,12 @@
                                 </td>
                                 <td>
                                     <span class="badge rounded-pill bg-{{ 
-                                        $assessment->type === 'exam' ? 'danger' : 
-                                        ($assessment->type === 'test' ? 'warning' : 
-                                        ($assessment->type === 'practical' ? 'info' : 
-                                        ($assessment->type === 'theory' ? 'primary' : 'success'))) 
+                                        $assessment->type === 'Theory' ? 'danger' : 
+                                        ($assessment->type === 'Test' ? 'warning' : 
+                                        ($assessment->type === 'Practical' ? 'info' : 
+                                        'success')) 
                                     }}">
-                                        {{ ucfirst($assessment->type) }}
+                                        {{ $assessment->type }} ({{ $assessmentWeights[$assessment->type] }}%)
                                     </span>
                                 </td>
                                 <td>{{ $assessment->max_score }}</td>
@@ -118,4 +132,4 @@
         @endif
     </div>
 </div>
-@endsection 
+@endsection

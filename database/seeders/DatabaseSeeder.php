@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ContactTypeSeeder::class,
             AddressTypeSeeder::class,
             TitleSeeder::class,
+            AssessmentContributionTypeSeeder::class,
         ]);
 
         // Then seed main tables in order of dependencies
@@ -22,10 +23,15 @@ class DatabaseSeeder extends Seeder
             SubjectSeeder::class,
             ModuleSeeder::class,
             SemesterSeeder::class,
+            StudyModesSeeder::class,
+            StudentSeeder::class,
+            EnrollmentCodeSeeder::class,
         ]);
 
+        // Seed assessment structures and test data
         $this->call([
-            StudyModesSeeder::class,
+            ModuleAssessmentStructureSeeder::class,
+            AssessmentSeeder::class,
         ]);
     }
 }

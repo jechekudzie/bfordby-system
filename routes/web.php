@@ -175,6 +175,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::prefix('student')->group(function () {
+    // Student Assessments
+    Route::get('assessments', [\App\Http\Controllers\StudentAssessmentController::class, 'index'])->name('students.assessments.list');
+    Route::get('assessments/{allocation}', [\App\Http\Controllers\StudentAssessmentController::class, 'show'])->name('students.assessments.show');
+
     // Core Student Management
     Route::get('students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index');
     Route::get('students/create', [\App\Http\Controllers\StudentController::class, 'create'])->name('students.create');

@@ -10,8 +10,11 @@
                         <h5 class="mb-0">
                             <i class="fas fa-edit text-primary me-2"></i>{{ $allocation->assessment->name }}
                         </h5>
-                        <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $student->enrollments()->first()]) }}" 
-                           class="btn btn-outline-secondary btn-sm">
+                        @php
+                            $enrollment = $student->enrollments()->first();
+                        @endphp
+                        <a href="{{ $enrollment ? route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) : '#' }}"
+                           class="btn btn-outline-secondary btn-sm {{ !$enrollment ? 'disabled' : '' }}">
                             <i class="fas fa-arrow-left me-2"></i>Back to Assessments
                         </a>
                     </div>
@@ -112,4 +115,4 @@
 </script>
 @endif
 @endpush
-@endsection 
+@endsection

@@ -50,6 +50,11 @@ class AssessmentAllocationSubmissionController extends Controller
             $student = Student::first();
             $submission = $this->getOrInitializeSubmission($student, $allocation);
             
+            // Check if already submitted
+            if ($submission->status === 'submitted') {
+                return back()->with('error', 'You have already submitted this assessment.');
+            }
+            
             // Validate submission timing and state
             $this->validateSubmissionState($submission, $allocation);
             
@@ -65,7 +70,7 @@ class AssessmentAllocationSubmissionController extends Controller
             // Validate and store submission content
             $this->validateAndStoreContent($request, $submission, $allocation);
 
-            // Update submission status
+            // Mark as submitted
             $submission->status = 'submitted';
             $submission->submitted_at = now();
             $submission->save();
@@ -104,22 +109,45 @@ class AssessmentAllocationSubmissionController extends Controller
                 }
             }
 
-            // First, find the enrollment code from the allocation
+            // Find the enrollment code from the allocation
             $enrollmentCode = $allocation->enrollmentCode;
 
-            // Then find the enrollment associated with this student and enrollment code
+            // Try to find the enrollment in this order:
+            // 1. By enrollment code if available
+            // 2. By course if the assessment is linked to a course
+            // 3. Latest enrollment for the student
+            $enrollment = null;
+            
             if ($enrollmentCode) {
                 $enrollment = $student->enrollments()
                     ->where('enrollment_code_id', $enrollmentCode->id)
                     ->first();
-            } else {
-                // Fallback - get the first enrollment
-                $enrollment = $student->enrollments()->first();
+            }
+            
+            if (!$enrollment && $allocation->assessment && $allocation->assessment->module && $allocation->assessment->module->subject) {
+                $courseId = $allocation->assessment->module->subject->course_id;
+                $enrollment = $student->enrollments()
+                    ->where('course_id', $courseId)
+                    ->latest()
+                    ->first();
+            }
+            
+            if (!$enrollment) {
+                $enrollment = $student->enrollments()
+                    ->latest()
+                    ->first();
+            }
+
+            if (!$enrollment) {
+                // If no enrollment is found, redirect to a safe fallback route
+                return redirect()->route('students.index')
+                    ->with('success', 'Assessment submitted successfully.')
+                    ->with('warning', 'Could not find associated enrollment details.');
             }
 
             return redirect()->route('students.enrollments.show', [
                 'student' => $student,
-                'enrollment' => $enrollment ?? $student->enrollments()->first()
+                'enrollment' => $enrollment
             ])->with('success', 'Assessment submitted successfully.');
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -313,6 +341,16 @@ class AssessmentAllocationSubmissionController extends Controller
             }
         }
 
+        // Get assessment weight information
+        $assessment = $allocation->assessment;
+        $module = $assessment->module;
+        
+        // Get contribution weight for this assessment type
+        $contributionWeight = $assessment->getContributionWeight();
+        
+        // Get trimester weight
+        $trimesterWeight = $assessment->getTrimesterWeight($allocation->semester_id);
+
         // For upload submissions or group submissions with uploads, use a dedicated view
         if ($allocation->submission_type === 'upload' || 
             ($allocation->submission_type === 'group' && (!$allocation->questions || $allocation->questions->isEmpty()))) {
@@ -337,7 +375,9 @@ class AssessmentAllocationSubmissionController extends Controller
                 'percentageGrade', 
                 'weights', 
                 'group', 
-                'groupMembers'
+                'groupMembers',
+                'contributionWeight',
+                'trimesterWeight'
             ));
         }
 
@@ -384,7 +424,9 @@ class AssessmentAllocationSubmissionController extends Controller
             'gradeData', 
             'percentageGrade', 
             'group', 
-            'groupMembers'
+            'groupMembers',
+            'contributionWeight',
+            'trimesterWeight'
         ));
     }
 
@@ -631,9 +673,11 @@ class AssessmentAllocationSubmissionController extends Controller
 
         // Handle file uploads
         if ($request->hasFile('file')) {
+            // Delete old file if it exists
             if ($submission->file_path) {
                 Storage::delete($submission->file_path);
             }
+            // Store new file
             $path = $request->file('file')->store('submissions');
             $submission->file_path = $path;
         }

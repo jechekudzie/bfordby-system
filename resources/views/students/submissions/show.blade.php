@@ -1,29 +1,27 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-4">
     <div class="card">
         <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="fas fa-file-alt text-primary me-2"></i>{{ $allocation->assessment->name }}
-                </h5>
-                @php
-                    $enrollment = $student->enrollments()
-                        ->where('course_id', $allocation->assessment->module->course_id)
-                        ->first();
-                @endphp
-                @if($enrollment)
-                    <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) }}" 
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Assessments
-                    </a>
-                @else
-                    <a href="{{ route('students.show', $student) }}" 
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Student
-                    </a>
-                @endif
+                <div>
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt text-primary me-2"></i>{{ $allocation->assessment->name }}
+                    </h5>
+                    @if($submission->status === 'submitted')
+                        <div class="mt-2 text-success">
+                            <i class="fas fa-check-circle me-1"></i>
+                            File Already Submitted
+                            <div class="small text-muted">
+                                Uploaded {{ $submission->submitted_at->diffForHumans() }}
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                <a href="{{ route('students.assessments.list') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
             </div>
         </div>
 
@@ -338,4 +336,4 @@
         </script>
     @endif
 </div>
-@endsection 
+@endsection

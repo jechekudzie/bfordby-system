@@ -14,22 +14,52 @@ class AssessmentController extends Controller
 {
     public function index(Subject $subject, Module $module)
     {
-        
         $assessments = Assessment::where('module_id', $module->id)
             ->latest()
             ->paginate(10);
 
         $course = $subject->course;
 
-        return view('admin.assessments.index', compact('assessments', 'course', 'subject', 'module'));
+        // Get assessment type weights
+        $assessmentWeights = $module->assessmentStructures()
+            ->where('is_trimester_weight', false)
+            ->with('contributionType')
+            ->get()
+            ->mapWithKeys(function ($weight) {
+                return [$weight->contributionType->name => $weight->weight];
+            });
+
+        // Get trimester weights
+        $trimesterWeights = $module->assessmentStructures()
+            ->where('is_trimester_weight', true)
+            ->orderBy('trimester')
+            ->get()
+            ->mapWithKeys(function ($weight) {
+                return ['Trimester ' . $weight->trimester => $weight->weight];
+            });
+
+        return view('admin.assessments.index', compact(
+            'assessments',
+            'course',
+            'subject',
+            'module',
+            'assessmentWeights',
+            'trimesterWeights'
+        ));
     }
 
     public function create(Subject $subject, Module $module)
     {
-    
         $course = $subject->course;
+        $assessmentWeights = $module->assessmentStructures()
+            ->where('is_trimester_weight', false)
+            ->with('contributionType')
+            ->get()
+            ->mapWithKeys(function ($weight) {
+                return [$weight->contributionType->name => $weight->weight];
+            });
 
-        return view('admin.assessments.create', compact('course', 'subject', 'module'));
+        return view('admin.assessments.create', compact('course', 'subject', 'module', 'assessmentWeights'));
     }
 
     public function store(Request $request, Course $course, Subject $subject, Module $module)
@@ -37,7 +67,7 @@ class AssessmentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:assignment,test,exam,practical,theory',
+            'type' => 'required|in:Coursework,Test,Practical,Theory',
             'max_score' => 'required|numeric|min:0|max:100',
             'status' => 'required|in:draft,published,archived'
         ]);
@@ -55,8 +85,15 @@ class AssessmentController extends Controller
     public function edit(Subject $subject, Module $module, Assessment $assessment)
     {
         $course = $subject->course;
+        $assessmentWeights = $module->assessmentStructures()
+            ->where('is_trimester_weight', false)
+            ->with('contributionType')
+            ->get()
+            ->mapWithKeys(function ($weight) {
+                return [$weight->contributionType->name => $weight->weight];
+            });
 
-        return view('admin.assessments.edit', compact('course', 'subject', 'module', 'assessment'));
+        return view('admin.assessments.edit', compact('course', 'subject', 'module', 'assessment', 'assessmentWeights'));
     }
 
     public function update(Request $request, Course $course, Subject $subject, Module $module, Assessment $assessment)
@@ -64,7 +101,7 @@ class AssessmentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:assignment,test,exam,practical,theory',
+            'type' => 'required|in:Coursework,Test,Practical,Theory',
             'max_score' => 'required|numeric|min:0|max:100',
             'status' => 'required|in:draft,published,archived'
         ]);

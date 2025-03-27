@@ -53,7 +53,7 @@ class StudentEnrollmentController extends Controller
 
     public function show(Student $student, Enrollment $enrollment)
     {
-        // Load the enrollment with all necessary relationships
+        // Load the enrollment with necessary relationships
         $enrollment->load([
             'student',
             'course.subjects.modules.assessments.allocations' => function($query) use ($enrollment) {
@@ -87,14 +87,6 @@ class StudentEnrollmentController extends Controller
                     });
             }
         }
-
-        // Add debug information
-        \Log::info('Enrollment Details:', [
-            'enrollment_id' => $enrollment->id,
-            'course' => $enrollment->course->name,
-            'subjects_count' => $subjects->count(),
-            'allocations_count' => $allocations->count()
-        ]);
 
         return view('students.enrollments.show', [
             'enrollment' => $enrollment,

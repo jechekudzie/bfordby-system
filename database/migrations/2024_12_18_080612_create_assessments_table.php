@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('module_id');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('type', ['assignment', 'test', 'exam', 'practical', 'theory']);
+            $table->enum('type', ['Coursework', 'Test', 'Practical', 'Theory']);
             $table->decimal('max_score', 5, 2)->nullable();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->string('slug')->unique();
