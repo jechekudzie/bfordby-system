@@ -33,7 +33,7 @@ class ModuleController extends Controller
         $module = $subject->modules()->create($validated);
 
         return redirect()
-            ->route('admin.courses.subjects.modules.index', $subject)
+            ->route('admin.modules.index')
             ->with('success', 'Module created successfully.');
     }
 
@@ -52,7 +52,7 @@ class ModuleController extends Controller
         $module->update($validated);
 
         return redirect()
-            ->route('admin.courses.subjects.modules.index', $subject)
+            ->route('admin.modules.index')
             ->with('success', 'Module updated successfully.');
     }
 
@@ -61,7 +61,7 @@ class ModuleController extends Controller
         $module->delete();
 
         return redirect()
-            ->route('admin.courses.subjects.modules.index', $subject)
+            ->route('admin.modules.index')
             ->with('success', 'Module deleted successfully.');
     }
 }

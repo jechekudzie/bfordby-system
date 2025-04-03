@@ -120,20 +120,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-dollar-sign fa-2x text-danger"></i>
-                            </div>
-                            <h6>Payments</h6>
-                            <p class="text-muted mb-3">Total: {{ $paymentsCount }}</p>
-                            <a href="{{ route('students.payments.index', ['student' => 1]) }}" class="btn btn-danger btn-sm">
-                                <i class="fas fa-list me-1"></i>View Payments
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
