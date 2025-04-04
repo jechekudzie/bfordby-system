@@ -1,109 +1,94 @@
-@extends('layouts.admin')
+@extends('students.submissions.layouts.base')
 
-@section('content')
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-edit text-primary me-2"></i>{{ $allocation->assessment->name }}
-                        </h5>
-                        @if($allocation->is_timed && $submission->start_time)
-                            <div>
-                                <span class="badge bg-danger p-2">
-                                    <i class="fas fa-clock me-1"></i> 
-                                    <span id="timer-display">Loading timer...</span>
-                                </span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <!-- Debug info - will be hidden in production -->
-                    <div class="alert alert-info mb-4" id="debug-info">
-                        <p><strong>Debug Info:</strong></p>
-                        <div id="debug-output"></div>
-                    </div>
-
-                    <form action="{{ $submission->id ? route('students.submissions.update', $allocation) : route('students.submissions.store', $allocation) }}"
-                          method="POST"
-                          id="assessmentForm">
-                        @csrf
-                        <input type="hidden" id="csrf-token-value" name="_token" value="{{ csrf_token() }}">
-                        @if($submission->id)
-                            @method('PUT')
-                        @endif
-
-                        @forelse($allocation->questions as $index => $question)
-                            <div class="mb-4 p-4 border rounded {{ $index > 0 ? 'mt-4' : '' }}">
-                                <div class="d-flex align-items-start mb-3">
-                                    <div class="bg-light rounded-circle p-2 me-3">
-                                        <span class="fw-bold">{{ $index + 1 }}</span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">{{ $question->question_text }}</h6>
-                                        @if($question->weight)
-                                            <small class="text-muted">
-                                                <i class="fas fa-star text-warning me-1"></i>{{ $question->weight }} points
-                                            </small>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                @if($question->question_type === 'multiple_choice')
-                                    <div class="ms-5">
-                                        @foreach($question->options as $option)
-                                            <div class="form-check mb-2">
-                                                <input type="radio" 
-                                                       class="form-check-input" 
-                                                       name="answers[{{ $question->id }}]" 
-                                                       id="option_{{ $option->id }}"
-                                                       value="{{ $option->id }}"
-                                                       {{ old("answers.{$question->id}", optional($submission->answers)[$question->id] ?? '') == $option->id ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="option_{{ $option->id }}">
-                                                    {{ $option->option_text }}
-                                                </label>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="ms-5">
-                                        <textarea class="form-control" 
-                                                  name="answers[{{ $question->id }}]" 
-                                                  rows="4" 
-                                                  placeholder="Enter your answer here...">{{ old("answers.{$question->id}", optional($submission->answers)[$question->id] ?? '') }}</textarea>
-                                    </div>
-                                @endif
-
-                                @error("answers.{$question->id}")
-                                    <div class="ms-5 mt-2 text-danger">
-                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
-                                    </div>
-                                @enderror
-                            </div>
-                        @empty
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>No questions have been added to this assessment yet.
-                            </div>
-                        @endforelse
-
-                        @if($allocation->questions->isNotEmpty())
-                            <div class="d-flex justify-content-end mt-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit Assessment
-                                </button>
-                            </div>
-                        @endif
-                    </form>
-                </div>
+@section('submission_content')
+    @if($allocation->is_timed && $submission->start_time)
+        <div class="mb-4">
+            <div class="badge bg-danger p-2">
+                <i class="fas fa-clock me-1"></i> 
+                <span id="timer-display">Loading timer...</span>
             </div>
         </div>
-    </div>
-</div>
+    @endif
 
+    <!-- Debug info - will be hidden in production -->
+    <div class="alert alert-info mb-4" id="debug-info">
+        <p><strong>Debug Info:</strong></p>
+        <div id="debug-output"></div>
+    </div>
+
+    <form action="{{ $submission->id ? route('students.submissions.update', $allocation) : route('students.submissions.store', $allocation) }}"
+          method="POST"
+          id="assessmentForm">
+        @csrf
+        <input type="hidden" id="csrf-token-value" name="_token" value="{{ csrf_token() }}">
+        @if($submission->id)
+            @method('PUT')
+        @endif
+
+        @forelse($allocation->questions as $index => $question)
+            <div class="mb-4 p-4 border rounded {{ $index > 0 ? 'mt-4' : '' }}">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="bg-light rounded-circle p-2 me-3">
+                        <span class="fw-bold">{{ $index + 1 }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ $question->question_text }}</h6>
+                        @if($question->weight)
+                            <small class="text-muted">
+                                <i class="fas fa-star text-warning me-1"></i>{{ $question->weight }} points
+                            </small>
+                        @endif
+                    </div>
+                </div>
+
+                @if($question->question_type === 'multiple_choice')
+                    <div class="ms-5">
+                        @foreach($question->options as $option)
+                            <div class="form-check mb-2">
+                                <input type="radio" 
+                                       class="form-check-input" 
+                                       name="answers[{{ $question->id }}]" 
+                                       id="option_{{ $option->id }}"
+                                       value="{{ $option->id }}"
+                                       {{ old("answers.{$question->id}", optional($submission->answers)[$question->id] ?? '') == $option->id ? 'checked' : '' }}>
+                                <label class="form-check-label" for="option_{{ $option->id }}">
+                                    {{ $option->option_text }}
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="ms-5">
+                        <textarea class="form-control" 
+                                  name="answers[{{ $question->id }}]" 
+                                  rows="4" 
+                                  placeholder="Enter your answer here...">{{ old("answers.{$question->id}", optional($submission->answers)[$question->id] ?? '') }}</textarea>
+                    </div>
+                @endif
+
+                @error("answers.{$question->id}")
+                    <div class="ms-5 mt-2 text-danger">
+                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</small>
+                    </div>
+                @enderror
+            </div>
+        @empty
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>No questions have been added to this assessment yet.
+            </div>
+        @endforelse
+
+        @if($allocation->questions->isNotEmpty())
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Assessment
+                </button>
+            </div>
+        @endif
+    </form>
+@endsection
+
+@push('scripts')
 <style>
 #debug-info {
     font-family: monospace;
@@ -215,4 +200,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection 
+@endpush 

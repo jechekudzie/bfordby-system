@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             ModuleAssessmentStructureSeeder::class,
             AssessmentSeeder::class,
             AssessmentAllocationSubmissionSeeder::class,
+            TestSubmissionSeeder::class,
         ]);
     }
 }

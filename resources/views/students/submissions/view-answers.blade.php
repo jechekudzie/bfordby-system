@@ -11,22 +11,8 @@
     </div>
     <div>
         @php
-            $student = $submission->student ?? null;
-            $enrollment = null;
-            
-            if ($student) {
-                $enrollment = $student->enrollments()
-                    ->where('course_id', $allocation->assessment->module->subject->course_id)
-                    ->first();
-            }
-            
-            $enrollmentUrl = $enrollment 
-                ? route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) 
-                : route('dashboard');
+            /* The back button is already included in the base layout */
         @endphp
-        <a href="{{ $enrollmentUrl }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Assessments
-        </a>
     </div>
 </div>
 

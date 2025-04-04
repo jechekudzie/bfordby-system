@@ -8,9 +8,6 @@
         <span class="badge bg-primary ms-2">Group Submission</span>
         @endif
     </h5>
-    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-    </a>
 </div>
 
 @if($group)
@@ -104,7 +101,7 @@
                     <div class="flex-grow-1">
                         <h6 class="alert-heading">File Already Submitted{{ $group ? ' for Your Group' : '' }}</h6>
                         <p class="mb-1">You have already uploaded a file for this assessment{{ $group ? ' on behalf of your group' : '' }}.</p>
-                        <p class="mb-0 small">Uploaded {{ $submission->submitted_at->diffForHumans() }}</p>
+                        <p class="mb-0 small">Uploaded {{ $submission->submitted_at ? $submission->submitted_at->diffForHumans() : 'recently' }}</p>
                     </div>
                     <div>
                         <a href="{{ route('students.submissions.download', $allocation) }}" 

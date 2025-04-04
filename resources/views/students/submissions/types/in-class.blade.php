@@ -28,10 +28,6 @@
             @endif
 
             <div class="d-flex justify-content-center gap-2">
-                <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $student->enrollments()->first()]) }}" 
-                   class="btn btn-outline-primary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Assessments
-                </a>
                 @if($allocation->file_path)
                     <a href="{{ route('students.submissions.download', $allocation) }}" 
                        class="btn btn-primary">
