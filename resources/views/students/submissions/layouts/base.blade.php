@@ -7,14 +7,14 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-edit text-primary me-2"></i>{{ $allocation->assessment->name }}
+                        <h5 class="mb-0 text-brand-primary">
+                            <i class="fas fa-edit text-brand-primary me-2"></i>{{ $allocation->assessment->name }}
                         </h5>
                         @php
                             $enrollment = $student->enrollments()->first();
                         @endphp
                         <a href="{{ $enrollment ? route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) : '#' }}"
-                           class="btn btn-outline-secondary btn-sm {{ !$enrollment ? 'disabled' : '' }}">
+                           class="btn btn-brand-secondary btn-sm {{ !$enrollment ? 'disabled' : '' }}">
                             <i class="fas fa-arrow-left me-2"></i>Back to Assessments
                         </a>
                     </div>
@@ -23,12 +23,12 @@
                 <div class="card-body">
                     {{-- Timer for Timed Assessments --}}
                     @if($allocation->is_timed && $submission->started_at)
-                        <div class="alert alert-warning mb-4">
+                        <div class="alert bg-brand-secondary-light mb-4">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
+                                <h6 class="mb-0 text-brand-primary">
                                     <i class="fas fa-clock me-2"></i>Time Remaining
                                 </h6>
-                                <div id="timer" class="h5 mb-0" 
+                                <div id="timer" class="h5 mb-0 text-brand-primary" 
                                      data-start="{{ $submission->started_at }}" 
                                      data-duration="{{ $allocation->duration_minutes }}">
                                     Loading...
@@ -39,9 +39,9 @@
 
                     {{-- Assessment Instructions --}}
                     @if($allocation->content)
-                        <div class="card mb-4">
+                        <div class="card mb-4 border-brand-primary">
                             <div class="card-body">
-                                <h6 class="card-subtitle mb-2 text-muted">
+                                <h6 class="card-subtitle mb-2 text-brand-primary">
                                     <i class="fas fa-info-circle me-2"></i>Instructions
                                 </h6>
                                 <div class="mt-3">
@@ -53,17 +53,17 @@
 
                     {{-- Group Information (if applicable) --}}
                     @if($allocation->submission_type === 'group' && $group)
-                        <div class="card mb-4">
+                        <div class="card mb-4 border-brand-primary">
                             <div class="card-body">
-                                <h6 class="card-subtitle mb-3 text-muted">
+                                <h6 class="card-subtitle mb-3 text-brand-primary">
                                     <i class="fas fa-users me-2"></i>Group Members
                                 </h6>
                                 <div class="list-group list-group-flush">
                                     @foreach($group->students as $member)
                                         <div class="list-group-item px-0">
                                             <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-light p-2 me-3">
-                                                    <i class="fas fa-user-graduate text-primary"></i>
+                                                <div class="rounded-circle bg-brand-primary-light p-2 me-3">
+                                                    <i class="fas fa-user-graduate text-brand-primary"></i>
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0">{{ $member->first_name }} {{ $member->last_name }}</h6>
@@ -84,6 +84,67 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Brand Colors */
+.bg-brand-primary {
+    background-color: #154832;
+    color: white;
+}
+
+.bg-brand-secondary {
+    background-color: #FBD801;
+    color: #154832;
+}
+
+.bg-brand-primary-light {
+    background-color: rgba(21, 72, 50, 0.2);
+    color: #154832;
+}
+
+.bg-brand-secondary-light {
+    background-color: rgba(251, 216, 1, 0.2);
+    color: #154832;
+}
+
+.text-brand-primary {
+    color: #154832;
+}
+
+.border-brand-primary {
+    border-color: #154832;
+}
+
+.btn-brand-primary {
+    background-color: #154832;
+    color: white;
+}
+
+.btn-brand-primary:hover {
+    background-color: #0d3422;
+    color: white;
+}
+
+.btn-brand-secondary {
+    background-color: #FBD801;
+    color: #154832;
+}
+
+.btn-brand-secondary:hover {
+    background-color: #e6c601;
+    color: #154832;
+}
+
+.badge-brand-primary {
+    background-color: #154832;
+    color: white;
+}
+
+.badge-brand-secondary {
+    background-color: #FBD801;
+    color: #154832;
+}
+</style>
 
 @push('scripts')
 @if($allocation->is_timed && $submission->started_at)

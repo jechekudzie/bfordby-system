@@ -3,9 +3,9 @@
 @section('submission_content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center">
-        <i class="fas fa-check-circle text-success me-3 fa-2x"></i>
+        <i class="fas fa-check-circle text-brand-primary me-3 fa-2x"></i>
         <div>
-            <h5 class="mb-0">{{ $allocation->assessment->name }}</h5>
+            <h5 class="mb-0 text-brand-primary">{{ $allocation->assessment->name }}</h5>
             <div class="text-muted small">Your Answers</div>
         </div>
     </div>
@@ -17,7 +17,7 @@
 </div>
 
 {{-- Submission Status Card --}}
-<div class="card border-0 bg-primary text-white mb-4">
+<div class="card border-0 bg-brand-primary text-white mb-4">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
             <div>
@@ -38,14 +38,14 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-file-alt text-primary fa-2x me-3"></i>
+                    <i class="fas fa-file-alt text-brand-primary fa-2x me-3"></i>
                     <div>
-                        <h6 class="mb-1">Uploaded File</h6>
+                        <h6 class="mb-1 text-brand-primary">Uploaded File</h6>
                         <div class="text-muted small">{{ basename($submission->file_path) }}</div>
                     </div>
                 </div>
                 <a href="{{ route('students.submissions.download', $allocation) }}" 
-                   class="btn btn-primary"
+                   class="btn btn-brand-primary"
                    target="_blank"
                    rel="noopener noreferrer"
                    title="Download {{ basename($submission->file_path) }}">
@@ -60,18 +60,18 @@
 @if($allocation->questions->isNotEmpty() && $submission->answers)
     <div class="card shadow-sm">
         <div class="card-header bg-light">
-            <h6 class="mb-0"><i class="fas fa-list-alt me-2"></i>Your Answers</h6>
+            <h6 class="mb-0 text-brand-primary"><i class="fas fa-list-alt me-2"></i>Your Answers</h6>
         </div>
         <div class="card-body">
             @if(empty($submission->answers) || count($submission->answers) === 0)
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
+                <div class="alert bg-brand-secondary-light">
+                    <i class="fas fa-exclamation-triangle me-2 text-brand-primary"></i>
                     No answers found in your submission.
                 </div>
                 
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Submission Data:</strong><br>
+                <div class="alert bg-brand-secondary-light">
+                    <i class="fas fa-info-circle me-2 text-brand-primary"></i>
+                    <strong class="text-brand-primary">Submission Data:</strong><br>
                     Status: {{ $submission->status }}<br>
                     Submitted: {{ $submission->submitted_at ? date('Y-m-d H:i:s', strtotime($submission->submitted_at)) : 'Not submitted' }}<br>
                     Answers Type: {{ gettype($submission->answers) }}<br>
@@ -81,7 +81,7 @@
             
             @foreach($allocation->questions as $question)
                 <div class="mb-4">
-                    <div class="fw-medium mb-2">Question {{ $loop->iteration }}</div>
+                    <div class="fw-medium mb-2 text-brand-primary">Question {{ $loop->iteration }}</div>
                     <div class="text-muted mb-2">{!! nl2br(e($question->content)) !!}</div>
                     
                     @if($question->question_type === 'multiple_choice')
@@ -99,9 +99,9 @@
                                 $selectedOption = $question->options->where('option_text', $answer)->first();
                             }
                         @endphp
-                        <div class="bg-light rounded p-3">
+                        <div class="bg-brand-primary-light rounded p-3">
                             <div class="d-flex align-items-center">
-                                <i class="fas fa-check-circle text-primary me-2"></i>
+                                <i class="fas fa-check-circle text-brand-primary me-2"></i>
                                 <div>
                                     @if($selectedOption)
                                         {{ $selectedOption->option_text }}
@@ -114,7 +114,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="bg-light rounded p-3">
+                        <div class="bg-brand-primary-light rounded p-3">
                             @if(isset($submission->answers[$question->id]) && $submission->answers[$question->id])
                                 {!! nl2br(e($submission->answers[$question->id])) !!}
                             @else
@@ -133,21 +133,21 @@
 
 {{-- Grade Section (if graded) --}}
 @if($submission->status === 'graded')
-    <div class="card shadow-sm border-success mt-4">
+    <div class="card shadow-sm border-brand-primary mt-4">
         <div class="card-body">
-            <h6 class="text-success mb-3">
+            <h6 class="text-brand-primary mb-3">
                 <i class="fas fa-award me-2"></i>Grade
             </h6>
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="bg-light rounded p-3 text-center">
-                        <div class="h3 mb-0 text-success">{{ number_format($submission->grade, 1) }}%</div>
+                    <div class="bg-brand-primary-light rounded p-3 text-center">
+                        <div class="h3 mb-0 text-brand-primary">{{ number_format($submission->grade, 1) }}%</div>
                         <div class="small text-muted">Overall Grade</div>
                     </div>
                 </div>
                 @if(isset($submission->feedback['general']))
                     <div class="col-md-8">
-                        <div class="bg-light rounded p-3">
+                        <div class="bg-brand-primary-light rounded p-3">
                             <div class="small text-muted mb-1">General Feedback</div>
                             <div>{!! nl2br(e($submission->feedback['general'])) !!}</div>
                         </div>
@@ -162,21 +162,21 @@
 @if(isset($isAdmin) && $isAdmin)
     <div class="card shadow-sm mt-4">
         <div class="card-header bg-light">
-            <h6 class="mb-0"><i class="fas fa-bug me-2"></i>Debug Information</h6>
+            <h6 class="mb-0 text-brand-primary"><i class="fas fa-bug me-2"></i>Debug Information</h6>
         </div>
         <div class="card-body">
-            <h6>Raw Answers Data:</h6>
+            <h6 class="text-brand-primary">Raw Answers Data:</h6>
             <pre class="bg-light p-3 rounded">{{ json_encode($submission->answers, JSON_PRETTY_PRINT) }}</pre>
             
-            <h6>Questions:</h6>
+            <h6 class="text-brand-primary">Questions:</h6>
             <ul>
                 @foreach($allocation->questions as $question)
                     <li>
-                        <strong>ID:</strong> {{ $question->id }}<br>
-                        <strong>Content:</strong> {{ $question->content }}<br>
-                        <strong>Type:</strong> {{ $question->question_type }}<br>
+                        <strong class="text-brand-primary">ID:</strong> {{ $question->id }}<br>
+                        <strong class="text-brand-primary">Content:</strong> {{ $question->content }}<br>
+                        <strong class="text-brand-primary">Type:</strong> {{ $question->question_type }}<br>
                         @if($question->question_type === 'multiple_choice')
-                            <strong>Options:</strong>
+                            <strong class="text-brand-primary">Options:</strong>
                             <ul>
                                 @foreach($question->options as $option)
                                     <li>ID: {{ $option->id }} - {{ $option->option_text }}</li>

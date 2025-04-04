@@ -3,7 +3,7 @@
 @section('submission_content')
     @if($allocation->is_timed && $submission->start_time)
         <div class="mb-4">
-            <div class="badge bg-danger p-2">
+            <div class="badge badge-brand-primary p-2">
                 <i class="fas fa-clock me-1"></i> 
                 <span id="timer-display">Loading timer...</span>
             </div>
@@ -11,8 +11,8 @@
     @endif
 
     <!-- Debug info - will be hidden in production -->
-    <div class="alert alert-info mb-4" id="debug-info">
-        <p><strong>Debug Info:</strong></p>
+    <div class="alert bg-brand-secondary-light mb-4" id="debug-info">
+        <p class="text-brand-primary"><strong>Debug Info:</strong></p>
         <div id="debug-output"></div>
     </div>
 
@@ -28,11 +28,11 @@
         @forelse($allocation->questions as $index => $question)
             <div class="mb-4 p-4 border rounded {{ $index > 0 ? 'mt-4' : '' }}">
                 <div class="d-flex align-items-start mb-3">
-                    <div class="bg-light rounded-circle p-2 me-3">
-                        <span class="fw-bold">{{ $index + 1 }}</span>
+                    <div class="bg-brand-primary-light rounded-circle p-2 me-3">
+                        <span class="fw-bold text-brand-primary">{{ $index + 1 }}</span>
                     </div>
                     <div class="flex-grow-1">
-                        <h6 class="mb-0">{{ $question->question_text }}</h6>
+                        <h6 class="mb-0 text-brand-primary">{{ $question->question_text }}</h6>
                         @if($question->weight)
                             <small class="text-muted">
                                 <i class="fas fa-star text-warning me-1"></i>{{ $question->weight }} points
@@ -73,14 +73,14 @@
                 @enderror
             </div>
         @empty
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>No questions have been added to this assessment yet.
+            <div class="alert bg-brand-secondary-light">
+                <i class="fas fa-exclamation-triangle me-2 text-brand-primary"></i>No questions have been added to this assessment yet.
             </div>
         @endforelse
 
         @if($allocation->questions->isNotEmpty())
             <div class="d-flex justify-content-end mt-4">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-brand-primary">
                     <i class="fas fa-paper-plane me-2"></i>Submit Assessment
                 </button>
             </div>
@@ -117,8 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!timerDisplay) return;
 
     // Get the timestamps directly from PHP to avoid timezone issues
-    const startTimestamp = {{ strtotime($submission->start_time) }};
-    const durationMinutes = {{ $allocation->duration_minutes }};
+    const startTimestamp = parseInt("{{ strtotime($submission->start_time) }}");
+    const durationMinutes = parseInt("{{ $allocation->duration_minutes }}");
     const endTimestamp = startTimestamp + (durationMinutes * 60);
     
     // Flag to prevent multiple submissions
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const formArea = document.querySelector('.card-body');
                         if (formArea) {
                             const messageDiv = document.createElement('div');
-                            messageDiv.className = 'alert alert-warning mt-3';
+                            messageDiv.className = 'alert bg-brand-secondary-light mt-3';
                             messageDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Time is up! Your answers are being submitted...';
                             formArea.prepend(messageDiv);
                         }

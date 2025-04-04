@@ -3,12 +3,12 @@
 @section('submission_content')
     {{-- Timer for Timed Assessments --}}
     @if($allocation->is_timed && $submission->started_at)
-        <div class="alert alert-warning mb-4">
+        <div class="alert bg-brand-secondary-light mb-4">
             <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">
+                <h6 class="mb-0 text-brand-primary">
                     <i class="fas fa-clock me-2"></i>Time Remaining
                 </h6>
-                <div id="timer" class="h5 mb-0" 
+                <div id="timer" class="h5 mb-0 text-brand-primary" 
                      data-start="{{ $submission->started_at }}" 
                      data-duration="{{ $allocation->duration_minutes }}">
                     Loading...
@@ -27,11 +27,11 @@
         @endif
 
         @if($allocation->submission_type === 'upload')
-            <div class="card">
+            <div class="card border-brand-primary">
                 <div class="card-body">
-                    <h6 class="card-title">File Upload</h6>
+                    <h6 class="card-title text-brand-primary">File Upload</h6>
                     <div class="mb-3">
-                        <label for="file" class="form-label">Select File to Upload</label>
+                        <label for="file" class="form-label text-brand-primary">Select File to Upload</label>
                         <input type="file" 
                                class="form-control @error('file') is-invalid @enderror" 
                                id="file" 
@@ -48,15 +48,15 @@
                 </div>
             </div>
         @elseif($allocation->submission_type === 'online')
-            <div class="card">
+            <div class="card border-brand-primary">
                 <div class="card-body">
-                    <h6 class="card-title mb-4">Online Assessment</h6>
+                    <h6 class="card-title mb-4 text-brand-primary">Online Assessment</h6>
                     @foreach($allocation->questions as $index => $question)
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <label class="form-label fw-medium">Question {{ $index + 1 }}</label>
+                                <label class="form-label fw-medium text-brand-primary">Question {{ $index + 1 }}</label>
                                 @if($question->points)
-                                    <span class="badge bg-primary">{{ $question->points }} points</span>
+                                    <span class="badge badge-brand-primary">{{ $question->points }} points</span>
                                 @endif
                             </div>
                             <p class="mb-3">{{ $question->content }}</p>
@@ -90,7 +90,7 @@
         @endif
 
         <div class="d-grid gap-2 mt-4">
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" class="btn btn-brand-primary btn-lg">
                 <i class="fas fa-paper-plane me-2"></i>Submit Assessment
             </button>
         </div>
