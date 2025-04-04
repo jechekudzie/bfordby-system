@@ -147,7 +147,7 @@
                         {{-- Timer Display --}}
                         <div class="alert alert-info mb-4">
                             <h5><i class="fas fa-clock me-2"></i>Time Remaining</h5>
-                            <p>Time started: {{ $submission->start_time->format('Y-m-d H:i:s') }}</p>
+                            <p>Time started: {{ date('Y-m-d H:i:s', strtotime($submission->start_time)) }}</p>
                             <p>Time remaining: <span id="timer" class="fw-bold">Calculating...</span></p>
                         </div>
                     @endif
@@ -311,28 +311,46 @@
     </div>
 
     @if($allocation->is_timed && $submission->start_time)
-        <script>
-            function updateTimer() {
-                const startTime = new Date('{{ $submission->start_time }}');
-                const durationMinutes = {{ $allocation->duration_minutes }};
-                const endTime = new Date(startTime.getTime() + (durationMinutes * 60 * 1000));
-                const now = new Date();
-                const timeLeft = endTime - now;
-
-                if (timeLeft <= 0) {
-                    document.getElementById('timer').textContent = 'Time\'s up!';
-                    document.getElementById('submissionForm')?.submit();
-                    return;
+        <script type="text/javascript">
+            // Wait for document to be ready
+            window.onload = function() {
+                // Timer variables
+                var startTimeStr = "{{ date('Y-m-d H:i:s', strtotime($submission->start_time)) }}";
+                var durationMin = parseInt("{{ $allocation->duration_minutes }}");
+                
+                function updateTimer() {
+                    // Parse dates
+                    var startTime = new Date(startTimeStr);
+                    var endTime = new Date(startTime.getTime() + (durationMin * 60 * 1000));
+                    var currentTime = new Date();
+                    var timeLeft = endTime - currentTime;
+                    
+                    // Update timer display
+                    var timerElement = document.getElementById('timer');
+                    
+                    if (!timerElement) return;
+                    
+                    if (timeLeft <= 0) {
+                        timerElement.textContent = "Time's up!";
+                        var form = document.getElementById('submissionForm');
+                        if (form) form.submit();
+                        return;
+                    }
+                    
+                    // Calculate minutes and seconds
+                    var minutes = Math.floor(timeLeft / 60000);
+                    var seconds = Math.floor((timeLeft % 60000) / 1000);
+                    
+                    // Display the time
+                    var minuteText = minutes + " minute" + (minutes !== 1 ? "s" : "");
+                    var secondText = seconds + " second" + (seconds !== 1 ? "s" : "");
+                    timerElement.textContent = minuteText + " and " + secondText + " remaining";
                 }
-
-                const minutes = Math.floor(timeLeft / 60000);
-                const seconds = Math.floor((timeLeft % 60000) / 1000);
-                document.getElementById('timer').textContent = 
-                    `${minutes} minute${minutes !== 1 ? 's' : ''} and ${seconds} second${seconds !== 1 ? 's' : ''} remaining`;
-            }
-
-            updateTimer();
-            setInterval(updateTimer, 1000);
+                
+                // Run timer immediately and then every second
+                updateTimer();
+                setInterval(updateTimer, 1000);
+            };
         </script>
     @endif
 </div>

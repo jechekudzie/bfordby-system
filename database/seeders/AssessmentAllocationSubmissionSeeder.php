@@ -8,6 +8,9 @@ use App\Models\Assessment;
 use App\Models\Semester;
 use App\Models\EnrollmentCode;
 use App\Models\Student;
+use App\Models\Course;
+use App\Models\Enrollment;
+use App\Models\StudyMode;
 use App\Models\AssessmentAllocation;
 use App\Models\AssessmentAllocationQuestion;
 use App\Models\AssessmentAllocationQuestionOption;
@@ -30,14 +33,21 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
             return;
         }
 
-        $assessments = Assessment::take(10)->get();
+        $courses = Course::all();
+        if ($courses->isEmpty()) {
+            $this->command->error('No courses found! Please run CourseSeeder first.');
+            return;
+        }
+        
+        $assessments = Assessment::all();
         if ($assessments->isEmpty()) {
             $this->command->error('No assessments found! Please run AssessmentSeeder first.');
             return;
         }
 
-        $semester = Semester::where('status', 'active')->first() ?? Semester::first();
-        if (!$semester) {
+        // Get all semesters, or at least the first 3 trimesters
+        $semesters = Semester::take(3)->get();
+        if ($semesters->isEmpty()) {
             $this->command->error('No semesters found! Please run SemesterSeeder first.');
             return;
         }
@@ -47,60 +57,171 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
             $this->command->error('No enrollment codes found! Please run EnrollmentCodeSeeder first.');
             return;
         }
-
-        $this->command->info('Creating assessment allocations and student submissions...');
         
-        // Create various types of assessment allocations
-        foreach ($assessments as $index => $assessment) {
-            // Create an assessment allocation
-            $isEssay = $index % 3 === 0;
-            $isQuiz = $index % 3 === 1;
-            $isGroupWork = $index % 3 === 2;
-            
-            $submissionType = $isEssay ? 'online' : ($isQuiz ? 'online' : 'upload');
-            $isTimed = $isQuiz;
-            
-            $dueDate = Carbon::now()->addDays(rand(5, 30));
-            
-            $allocation = AssessmentAllocation::create([
-                'assessment_id' => $assessment->id,
-                'enrollment_code_id' => $enrollmentCode->id,
-                'semester_id' => $semester->id,
-                'status' => 'open',
-                'due_date' => $dueDate,
-                'content' => "Instructions for {$assessment->name}. Please follow the guidelines and submit your work before the due date.",
-                'submission_type' => $submissionType,
-                'is_timed' => $isTimed,
-                'duration_minutes' => $isTimed ? rand(30, 120) : null,
-            ]);
-            
-            // For quiz type, create questions and options
-            if ($isQuiz) {
-                $this->createQuizQuestions($allocation);
-            }
-            
-            // For group work, create a group
-            $group = null;
-            if ($isGroupWork) {
-                $group = Group::create([
-                    'assessment_allocation_id' => $allocation->id,
-                    'name' => 'Group ' . ($index + 1),
-                ]);
+        $studyMode = StudyMode::first();
+        if (!$studyMode) {
+            $this->command->error('No study modes found! Please run StudyModesSeeder first.');
+            return;
+        }
+
+        // Step 1: Ensure students are enrolled in courses
+        $this->command->info('Creating course enrollments for students...');
+        $enrollmentCount = 0;
+        
+        // Enroll each student in all available courses
+        foreach ($students as $student) {
+            foreach ($courses as $course) {
+                // Check if enrollment exists
+                $existingEnrollment = Enrollment::where('student_id', $student->id)
+                    ->where('course_id', $course->id)
+                    ->first();
                 
-                // Assign all students to the group
-                foreach ($students as $student) {
-                    GroupStudent::create([
-                        'group_id' => $group->id,
+                if (!$existingEnrollment) {
+                    Enrollment::create([
                         'student_id' => $student->id,
+                        'course_id' => $course->id,
+                        'enrollment_code_id' => $enrollmentCode->id,
+                        'study_mode_id' => $studyMode->id,
+                        'enrollment_date' => now()->subMonths(rand(1, 6)),
+                        'status' => 'active',
                     ]);
+                    $enrollmentCount++;
                 }
             }
+        }
+        $this->command->info("Created {$enrollmentCount} student course enrollments successfully!");
+
+        // Step 2: Create assessment allocations and submissions for each semester
+        $this->command->info('Creating assessment allocations and student submissions for all semesters...');
+        $submissionCount = 0;
+        $allocationCount = 0;
+        
+        // Process each course and create allocations for all modules and semesters
+        foreach ($courses as $course) {
+            $this->command->info("Processing course: {$course->name}");
             
-            // Create student submissions
-            $this->createStudentSubmissions($allocation, $students, $isQuiz, $isGroupWork, $group);
+            // Get all subjects for this course
+            $subjects = $course->subjects;
+            if ($subjects->isEmpty()) {
+                $this->command->warn("No subjects found for course {$course->name}");
+                continue;
+            }
+            
+            // Process each subject
+            foreach ($subjects as $subject) {
+                $this->command->info("  - Processing subject: {$subject->name}");
+                
+                // Get all modules for this subject
+                $modules = $subject->modules;
+                if ($modules->isEmpty()) {
+                    $this->command->warn("    No modules found for subject {$subject->name}");
+                    continue;
+                }
+                
+                // Process each module
+                foreach ($modules as $module) {
+                    $this->command->info("    - Processing module: {$module->name}");
+                    
+                    // Get all assessments for this module
+                    $moduleAssessments = $module->assessments;
+                    if ($moduleAssessments->isEmpty()) {
+                        $this->command->warn("      No assessments found for module {$module->name}");
+                        continue;
+                    }
+                    
+                    // Create allocations for each assessment in each semester
+                    foreach ($moduleAssessments as $index => $assessment) {
+                        foreach ($semesters as $semesterIndex => $semester) {
+                            $this->command->info("      - Creating allocation for assessment: {$assessment->name} in {$semester->name}");
+                            
+                            // Determine submission type based on index
+                            $isEssay = $index % 3 === 0;
+                            $isQuiz = $index % 3 === 1;
+                            $isGroupWork = $index % 3 === 2;
+                            
+                            $submissionType = $isEssay ? 'online' : ($isQuiz ? 'online' : 'upload');
+                            $isTimed = $isQuiz;
+                            
+                            // Create different due dates for different semesters
+                            $dueDate = Carbon::now()->addDays(rand(5, 30))->addMonths($semesterIndex * 4);
+                            
+                            // Check if allocation already exists
+                            $existingAllocation = AssessmentAllocation::where('assessment_id', $assessment->id)
+                                ->where('semester_id', $semester->id)
+                                ->first();
+                                
+                            if ($existingAllocation) {
+                                $this->command->info("      - Allocation already exists, skipping");
+                                continue;
+                            }
+                            
+                            $allocation = AssessmentAllocation::create([
+                                'assessment_id' => $assessment->id,
+                                'enrollment_code_id' => $enrollmentCode->id,
+                                'semester_id' => $semester->id,
+                                'status' => 'open',
+                                'due_date' => $dueDate,
+                                'content' => "Instructions for {$assessment->name} ({$semester->name}). Please follow the guidelines and submit your work before the due date.",
+                                'submission_type' => $submissionType,
+                                'is_timed' => $isTimed,
+                                'duration_minutes' => $isTimed ? rand(30, 120) : null,
+                            ]);
+                            
+                            $allocationCount++;
+                            
+                            // For quiz type, create questions and options
+                            if ($isQuiz) {
+                                $this->createQuizQuestions($allocation);
+                            }
+                            
+                            // Get students enrolled in this course
+                            $enrolledStudents = Enrollment::where('course_id', $course->id)
+                                ->where('status', 'active')
+                                ->get()
+                                ->map(function ($enrollment) {
+                                    return Student::find($enrollment->student_id);
+                                })
+                                ->filter(); // Remove nulls
+                            
+                            if ($enrolledStudents->isEmpty()) {
+                                $this->command->warn("      No students enrolled in this course - skipping submissions");
+                                continue;
+                            }
+                            
+                            // For group work, create a group
+                            $group = null;
+                            if ($isGroupWork) {
+                                $group = Group::create([
+                                    'assessment_allocation_id' => $allocation->id,
+                                    'name' => 'Group ' . ($index + 1) . ' - ' . $semester->name,
+                                ]);
+                                
+                                // Assign enrolled students to the group
+                                foreach ($enrolledStudents as $student) {
+                                    GroupStudent::create([
+                                        'group_id' => $group->id,
+                                        'student_id' => $student->id,
+                                    ]);
+                                }
+                            }
+                            
+                            // Create student submissions
+                            if ($isGroupWork && $group) {
+                                // Group submissions count as 1 submission for the whole group
+                                $submissionCount++;
+                            } else {
+                                // For individual assignments, count one per student
+                                $submissionCount += $enrolledStudents->count();
+                            }
+                            
+                            $this->createStudentSubmissions($allocation, $enrolledStudents, $isQuiz, $isGroupWork, $group);
+                        }
+                    }
+                }
+            }
         }
         
-        $this->command->info('Created assessment allocations and submissions successfully!');
+        $this->command->info("Created {$allocationCount} assessment allocations and {$submissionCount} graded submissions across all semesters successfully!");
     }
     
     /**
@@ -202,10 +323,8 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
             'status' => 'submitted',
         ]);
         
-        // Generate and apply grades (70-100% chance of being graded)
-        if (rand(1, 10) > 3) {
-            $this->gradeSubmission($submission);
-        }
+        // Always grade each submission (removed random chance)
+        $this->gradeSubmission($submission);
     }
     
     /**
@@ -218,20 +337,21 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
         
         foreach ($questions as $question) {
             if ($question->question_type === 'multiple_choice') {
-                // For multiple choice, select one of the options (50% chance of correct answer)
+                // Always select the correct answer
                 $options = $question->options;
                 $correctOption = $options->where('is_correct', true)->first();
                 
-                if (rand(0, 1) === 1 && $correctOption) {
+                if ($correctOption) {
                     $answers[$question->id] = [$correctOption->id];
                 } else {
-                    $wrongOption = $options->where('is_correct', false)->shuffle()->first();
-                    if ($wrongOption) {
-                        $answers[$question->id] = [$wrongOption->id];
+                    // Fallback if there's no correct option defined
+                    $anyOption = $options->first();
+                    if ($anyOption) {
+                        $answers[$question->id] = [$anyOption->id];
                     }
                 }
             } elseif ($question->question_type === 'text') {
-                $answers[$question->id] = "This is a sample text answer for question {$question->id}. It discusses the main points and provides an analysis of the topic.";
+                $answers[$question->id] = "This is a sample text answer for question {$question->id}. It discusses all the key points in detail and provides a thorough analysis of the topic with references to course materials.";
             }
         }
         
@@ -239,7 +359,7 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
     }
     
     /**
-     * Grade a submission with random but realistic grades
+     * Grade a submission with high scores
      */
     private function gradeSubmission($submission)
     {
@@ -270,9 +390,9 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
                             $feedback[$question->id] = "Incorrect. The correct answer was: " . $correctOption->option_text;
                         }
                     } elseif ($question->question_type === 'text') {
-                        // Random score between 60% and 95% of points
-                        $pointsEarned = round($question->weight * rand(60, 95) / 100, 1);
-                        $feedback[$question->id] = "Good attempt. Your answer demonstrates understanding but could be expanded with more examples and analysis.";
+                        // Higher scores: 80% to 100% of points
+                        $pointsEarned = round($question->weight * rand(80, 100) / 100, 1);
+                        $feedback[$question->id] = "Excellent answer. Your response demonstrates comprehensive understanding of the topic.";
                     }
                     
                     $grades[$question->id] = $pointsEarned;
@@ -280,10 +400,10 @@ class AssessmentAllocationSubmissionSeeder extends Seeder
                 }
             }
         } elseif ($submission->content || $submission->file_path) {
-            // For essays or file uploads, assign a grade between 60% and 95%
+            // For essays or file uploads, assign a grade between 80% and 100%
             $totalPoints = 100;
-            $earnedPoints = rand(60, 95);
-            $feedback['general'] = "Good work overall. Your submission demonstrates understanding of the key concepts. Some areas could be strengthened with more evidence or examples.";
+            $earnedPoints = rand(80, 100);
+            $feedback['general'] = "Excellent work! Your submission demonstrates a thorough understanding of the key concepts with strong supporting evidence and clear examples.";
         }
         
         // Calculate final grade as percentage

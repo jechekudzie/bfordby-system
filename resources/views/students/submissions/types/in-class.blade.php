@@ -12,9 +12,9 @@
                 This assessment will be conducted in class. Please attend your scheduled class session.
                 @if($allocation->due_date)
                     <br>
-                    <strong>Date:</strong> {{ $allocation->due_date->format('l, F j, Y') }}
+                    <strong>Date:</strong> {{ date('l, F j, Y', strtotime($allocation->due_date)) }}
                     <br>
-                    <strong>Time:</strong> {{ $allocation->due_date->format('g:i A') }}
+                    <strong>Time:</strong> {{ date('g:i A', strtotime($allocation->due_date)) }}
                 @endif
             </p>
 

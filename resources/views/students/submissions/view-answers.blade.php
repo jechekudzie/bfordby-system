@@ -9,9 +9,25 @@
             <div class="text-muted small">Your Answers</div>
         </div>
     </div>
-    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-    </a>
+    <div>
+        @php
+            $student = $submission->student ?? null;
+            $enrollment = null;
+            
+            if ($student) {
+                $enrollment = $student->enrollments()
+                    ->where('course_id', $allocation->assessment->module->subject->course_id)
+                    ->first();
+            }
+            
+            $enrollmentUrl = $enrollment 
+                ? route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) 
+                : route('dashboard');
+        @endphp
+        <a href="{{ $enrollmentUrl }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Assessments
+        </a>
+    </div>
 </div>
 
 {{-- Submission Status Card --}}
@@ -24,7 +40,7 @@
             </div>
             <div class="text-end">
                 <div class="small mb-1">Submitted</div>
-                <div class="fw-bold">{{ $submission->submitted_at->format('M d, Y - h:i A') }}</div>
+                <div class="fw-bold">{{ date('M d, Y - h:i A', strtotime($submission->submitted_at)) }}</div>
             </div>
         </div>
     </div>
@@ -71,7 +87,7 @@
                     <i class="fas fa-info-circle me-2"></i>
                     <strong>Submission Data:</strong><br>
                     Status: {{ $submission->status }}<br>
-                    Submitted: {{ $submission->submitted_at ? $submission->submitted_at->format('Y-m-d H:i:s') : 'Not submitted' }}<br>
+                    Submitted: {{ $submission->submitted_at ? date('Y-m-d H:i:s', strtotime($submission->submitted_at)) : 'Not submitted' }}<br>
                     Answers Type: {{ gettype($submission->answers) }}<br>
                     Answers Count: {{ is_array($submission->answers) || is_object($submission->answers) ? count($submission->answers) : 0 }}
                 </div>
@@ -156,8 +172,8 @@
     </div>
 @endif
 
-{{-- Debug Section (for admins only) --}}
-@if(auth()->user() && auth()->user()->hasRole('admin'))
+{{-- Debug Section --}}
+@if(isset($isAdmin) && $isAdmin)
     <div class="card shadow-sm mt-4">
         <div class="card-header bg-light">
             <h6 class="mb-0"><i class="fas fa-bug me-2"></i>Debug Information</h6>
