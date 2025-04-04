@@ -129,7 +129,7 @@
                     <!-- Subject Selector -->
                     <div class="card border-0 shadow-sm rounded-3 mb-4">
                         <div class="card-header py-3 bg-brand-primary">
-                            <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Subjects</h5>
+                            <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Disciplines</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -349,7 +349,7 @@
                     <!-- Subject Selector -->
                     <div class="card border-0 shadow-sm rounded-3 mb-4">
                         <div class="card-header py-3 bg-brand-primary">
-                            <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Subjects</h5>
+                            <h5 class="mb-0 text-white"><i class="fas fa-book me-2"></i>Disciplines</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -450,7 +450,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100 border-0 shadow-sm">
                                         <div class="card-header bg-brand-primary text-white py-3">
-                                            <h5 class="mb-0"><i class="fas fa-percentage me-2"></i>How Grades Are Calculated</h5>
+                                            <h5 class="mb-0 text-white"><i class="fas fa-percentage me-2"></i>How Grades Are Calculated</h5>
                                         </div>
                                         <div class="card-body">
                                             <p>Your final grade for each module is calculated as a weighted average of all assessments within that module:</p>
@@ -480,7 +480,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="card h-100 border-0 shadow-sm">
                                         <div class="card-header bg-brand-primary text-white py-3">
-                                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Grading Scale</h5>
+                                            <h5 class="mb-0 text-white"><i class="fas fa-chart-bar me-2"></i>Grading Scale</h5>
                                         </div>
                                         <div class="card-body p-0">
                                             <div class="table-responsive">
@@ -535,7 +535,7 @@
                                 <div class="col-md-12 mb-4">
                                     <div class="card border-0 shadow-sm">
                                         <div class="card-header bg-brand-primary text-white py-3">
-                                            <h5 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Understanding Course Components</h5>
+                                            <h5 class="mb-0 text-white"><i class="fas fa-puzzle-piece me-2"></i>Understanding Course Components</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
@@ -555,7 +555,7 @@
                                                             <i class="fas fa-book text-brand-primary"></i>
                                                         </div>
                                                         <div>
-                                                            <h6 class="mb-1">Subject</h6>
+                                                            <h6 class="mb-1">Discipline</h6>
                                                             <p class="text-muted small mb-0">Main area of study within your course (e.g., Accounting)</p>
                                                         </div>
                                                     </div>
@@ -565,7 +565,7 @@
                                                         </div>
                                                         <div>
                                                             <h6 class="mb-1">Module</h6>
-                                                            <p class="text-muted small mb-0">Specific topic or unit within a subject (e.g., Financial Reporting)</p>
+                                                            <p class="text-muted small mb-0">Specific topic or unit within a discipline (e.g., Financial Reporting)</p>
                                                         </div>
                                                     </div>
                                                     <div class="d-flex mb-3 ms-5">
@@ -607,8 +607,8 @@
                                                             <i class="fas fa-percentage text-brand-primary"></i>
                                                         </div>
                                                         <div>
-                                                            <h6 class="mb-1">Subject Contribution</h6>
-                                                            <p class="text-muted small mb-0">How much each subject contributes to your overall course GPA</p>
+                                                            <h6 class="mb-1">Discipline Contribution</h6>
+                                                            <p class="text-muted small mb-0">How much each discipline contributes to your overall course GPA</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -622,7 +622,7 @@
                                 <div class="col-md-12 mb-4">
                                     <div class="card border-0 shadow-sm">
                                         <div class="card-header bg-brand-primary text-white py-3">
-                                            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Example Calculation</h5>
+                                            <h5 class="mb-0 text-white"><i class="fas fa-lightbulb me-2"></i>Example Calculation</h5>
                                         </div>
                                         <div class="card-body">
                                             <p>For a module with 3 assessments:</p>

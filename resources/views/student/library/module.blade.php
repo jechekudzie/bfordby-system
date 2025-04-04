@@ -40,7 +40,7 @@
                                 @endif
                                 <div class="d-flex flex-wrap">
                                     <div class="me-4 mb-2">
-                                        <span class="fw-bold">Subject:</span>
+                                        <span class="fw-bold">Discipline:</span>
                                         <span>{{ $module->subject->name }}</span>
                                     </div>
                                     <div class="me-4 mb-2">

@@ -15,7 +15,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <p class="mb-0">Access all course materials and learning resources organized by subject and content type.</p>
+                        <p class="mb-0">Access all course materials and learning resources organized by discipline and content type.</p>
                     </div>
                 </div>
             </div>
@@ -60,7 +60,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
-                        <h5 class="mb-0">Courses & Learning Materials</h5>
+                        <h5 class="mb-0">Courses, Disciplines & Learning Materials</h5>
                     </div>
                     <div class="card-body">
                         <div class="accordion" id="coursesAccordion">
@@ -76,7 +76,7 @@
                                     <div id="collapse{{ $course->id }}" class="accordion-collapse collapse" 
                                          aria-labelledby="heading{{ $course->id }}" data-bs-parent="#coursesAccordion">
                                         <div class="accordion-body p-0">
-                                            <!-- Subjects Accordion -->
+                                            <!-- Disciplines Accordion -->
                                             <div class="accordion" id="subjectsAccordion{{ $course->id }}">
                                                 @foreach($course->subjects as $subject)
                                                     <div class="accordion-item border-0">

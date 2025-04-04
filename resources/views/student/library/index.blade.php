@@ -77,7 +77,7 @@
                             <h2 class="accordion-header" id="heading-{{ $enrollment->id }}">
                                 <button class="accordion-button {{ $index > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $enrollment->id }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="collapse-{{ $enrollment->id }}">
                                     <span class="me-2 fw-bold">{{ $enrollment->course->name }}</span>
-                                    <span class="badge rounded-pill bg-info me-2">{{ $enrollment->course->subjects->count() }} subjects</span>
+                                    <span class="badge rounded-pill bg-info me-2">{{ $enrollment->course->subjects->count() }} disciplines</span>
                                 </button>
                             </h2>
                             <div id="collapse-{{ $enrollment->id }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="heading-{{ $enrollment->id }}" data-bs-parent="#enrollmentAccordion">
