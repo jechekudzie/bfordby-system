@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ModuleAssessmentStructureSeeder::class,
             AssessmentSeeder::class,
+            AssessmentAllocationSubmissionSeeder::class,
         ]);
     }
 }
