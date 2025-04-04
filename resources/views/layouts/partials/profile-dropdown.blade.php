@@ -5,17 +5,19 @@
                 <div class="avatar avatar-xl">
                     <img class="rounded-circle" src="{{ asset('assets/img/team/72x72/57.webp') }}" alt="" />
                 </div>
-                <h6 class="mt-2 text-body-emphasis">{{ Auth::user()->name ?? 'Guest' }}</h6>
+                <h6 class="mt-2 text-body-emphasis">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</h6>
             </div>
         </div>
         <div class="overflow-auto scrollbar" style="height: 10rem;">
             <ul class="nav d-flex flex-column mb-2 pb-1">
+                @if(Auth::check())
                 <li class="nav-item">
                     <a class="nav-link px-3" href="{{ route('profile.edit') }}">
                         <span class="me-2 text-body" data-feather="user"></span>
                         <span>Profile</span>
                     </a>
                 </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link px-3" href="#!">
                         <span class="me-2 text-body" data-feather="pie-chart"></span>Dashboard
@@ -52,15 +54,16 @@
                 </li>
             </ul>
             <hr />
-            <div class="px-3">
+            @if(Auth::check())
+            <div class="px-3 pb-3">
                 <form method="POST" action="{{ route('logout') }}" id="logout-form">
                     @csrf
-                    <a class="btn btn-phoenix-secondary d-flex flex-center w-100" href="#!" 
-                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <button class="btn btn-phoenix-secondary d-flex flex-center w-100" type="submit">
                         <span class="me-2" data-feather="log-out"></span>Sign out
-                    </a>
+                    </button>
                 </form>
             </div>
+            @endif
             <div class="my-2 text-center fw-bold fs-10 text-body-quaternary">
                 <a class="text-body-quaternary me-1" href="#!">Privacy policy</a>
                 &bull;

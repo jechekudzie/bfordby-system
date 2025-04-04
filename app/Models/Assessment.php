@@ -67,7 +67,12 @@ class Assessment extends Model
         $contributionWeight = $this->getContributionWeight();
         $trimesterWeight = $this->getTrimesterWeight($semesterId);
         
-        return ($submission->grade * ($contributionWeight / 100) * ($trimesterWeight / 100));
+        // Fix: Instead of using double percentage calculation which makes grades very small,
+        // we'll modify this to just use the contribution weight for now
+        // return ($submission->grade * ($contributionWeight / 100) * ($trimesterWeight / 100));
+        
+        // Return just the grade multiplied by the contribution weight percentage
+        return ($submission->grade * ($contributionWeight / 100));
     }
 
     public function module()

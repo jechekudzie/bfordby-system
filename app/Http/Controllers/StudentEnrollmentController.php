@@ -12,8 +12,28 @@ use Illuminate\Http\Request;
 
 class StudentEnrollmentController extends Controller
 {
-    public function create(Student $student)
+    private function getDefaultStudent()
     {
+        $student = Student::first();
+        
+        if (!$student) {
+            return redirect()->route('students.index')
+                ->with('error', 'No student found. Please create a student first.');
+        }
+        
+        return $student;
+    }
+    
+    public function create(Student $student = null)
+    {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
         $courses = Course::all();
         $studyModes = StudyMode::all();
         $statuses = ['active', 'completed', 'withdrawn', 'repeat'];
@@ -21,8 +41,16 @@ class StudentEnrollmentController extends Controller
         return view('students.enrollments.create', compact('student', 'courses', 'studyModes', 'statuses'));
     }
 
-    public function store(Request $request, Student $student)
+    public function store(Request $request, Student $student = null)
     {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
         $validated = $request->validate([
             'course_id' => 'required|exists:courses,id',
             'study_mode_id' => 'required|exists:study_modes,id',
@@ -51,8 +79,16 @@ class StudentEnrollmentController extends Controller
         );
     }
 
-    public function show(Student $student, Enrollment $enrollment)
+    public function show(Student $student = null, Enrollment $enrollment)
     {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
         // Load the enrollment with necessary relationships
         $enrollment->load([
             'student',
@@ -89,6 +125,7 @@ class StudentEnrollmentController extends Controller
         }
 
         return view('students.enrollments.show', [
+            'student' => $student,
             'enrollment' => $enrollment,
             'subjects' => $subjects,
             'allocations' => $allocations,
@@ -106,5 +143,79 @@ class StudentEnrollmentController extends Controller
         ])->get();
 
         return response()->json($codes);
+    }
+    
+    public function index(Student $student = null)
+    {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
+        $enrollments = $student->enrollments()->with(['course', 'studyMode'])->get();
+        
+        return view('students.enrollments.index', compact('student', 'enrollments'));
+    }
+    
+    public function edit(Student $student = null, Enrollment $enrollment)
+    {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
+        $courses = Course::all();
+        $studyModes = StudyMode::all();
+        $statuses = ['active', 'completed', 'withdrawn', 'repeat'];
+        
+        return view('students.enrollments.edit', compact('student', 'enrollment', 'courses', 'studyModes', 'statuses'));
+    }
+    
+    public function update(Request $request, Student $student = null, Enrollment $enrollment)
+    {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
+        $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'study_mode_id' => 'required|exists:study_modes,id',
+            'enrollment_date' => 'required|date',
+            'status' => 'required|in:active,completed,withdrawn,repeat',
+            'enrollment_code_id' => 'required|exists:enrollment_codes,id'
+        ]);
+        
+        $enrollment->update($validated);
+        
+        return redirect()
+            ->route('students.enrollments.show', [$student, $enrollment])
+            ->with('success', 'Enrollment updated successfully.');
+    }
+    
+    public function destroy(Student $student = null, Enrollment $enrollment)
+    {
+        if (!$student || !$student->exists) {
+            $student = $this->getDefaultStudent();
+            
+            if (!$student instanceof Student) {
+                return $student; // It's a redirect
+            }
+        }
+        
+        $enrollment->delete();
+        
+        return redirect()
+            ->route('students.enrollments.index', $student)
+            ->with('success', 'Enrollment deleted successfully.');
     }
 }

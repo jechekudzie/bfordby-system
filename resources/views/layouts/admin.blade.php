@@ -323,7 +323,7 @@
                                     <div class="d-flex justify-content-between align-items-center border-bottom border-300 pb-2 mb-2">
                                         <h5 class="mb-0 text-body-emphasis">Your Organisations</h5>
                                     </div>
-                                    @if(auth()->check() && auth()->user()->organisations->count() > 0)
+                                    @if(auth()->check() && auth()->user()->organisations && auth()->user()->organisations->count() > 0)
                                     <div class="row g-2 py-1">
                                         @foreach(auth()->user()->organisations as $organisation)
                                         @php
@@ -374,7 +374,7 @@
 
 
                     @if(auth()->check())
-                    @if(auth()->user()->hasRole('super-admin'))
+                    @if(auth()->user() && auth()->user()->hasRole('super-admin'))
                     <li class="nav-item">
                         <a href="{{route('admin.organisations.manage')}}" class="nav-link" title="Admin Dashboard">
                             <span class="d-none d-sm-inline-block me-1">Admin</span>
@@ -481,7 +481,7 @@
                                             <img class="rounded-circle " src="" alt="" />
 
                                         </div>
-                                        <h6 class="mt-2 text-black">Admin</h6>
+                                        <h6 class="mt-2 text-black">{{ Auth::check() ? Auth::user()->name : 'Admin' }}</h6>
                                     </div>
                                     <div class="mb-3 mx-3">
                                         <input class="form-control form-control-sm" id="statusUpdateInput"

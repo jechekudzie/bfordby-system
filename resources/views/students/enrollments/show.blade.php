@@ -99,18 +99,24 @@
     <!-- Simple Tabs -->
     <div class="row">
         <div class="col-12">
-            <ul class="nav nav-pills mb-4" id="enrollmentTabs">
-                <li class="nav-item">
-                    <a class="nav-link active px-4 py-2" href="#subjects" data-bs-toggle="pill">
-                        <i class="fas fa-book-open me-2"></i>Subjects & Assessments
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-4 py-2" href="#progress" data-bs-toggle="pill">
-                        <i class="fas fa-chart-line me-2"></i>Assessment Progress
-                    </a>
-                </li>
-            </ul>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <ul class="nav nav-pills" id="enrollmentTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active px-4 py-2" href="#subjects" data-bs-toggle="pill">
+                            <i class="fas fa-book-open me-2"></i>Subjects & Assessments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-4 py-2" href="#progress" data-bs-toggle="pill">
+                            <i class="fas fa-chart-line me-2"></i>Assessment Progress
+                        </a>
+                    </li>
+                </ul>
+                
+                <a href="{{ route('students.transcript.show', $enrollment->student) }}" class="btn btn-brand-primary">
+                    <i class="fas fa-file-alt me-2"></i>Academic Transcript
+                </a>
+            </div>
 
             <div class="tab-content">
                 <!-- Subjects Tab -->

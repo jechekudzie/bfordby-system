@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -55,9 +55,13 @@ class Module extends Model
             ->get();
 
         $trimesterGrade = 0;
+        \Log::info("Calculating grade for module {$this->name}, student {$studentId}, semester {$semesterId}");
         foreach ($assessments as $assessment) {
-            $trimesterGrade += $assessment->calculateWeightedGrade($studentId, $semesterId);
+            $weightedGrade = $assessment->calculateWeightedGrade($studentId, $semesterId);
+            \Log::info("Assessment {$assessment->name}: weighted grade = {$weightedGrade}");
+            $trimesterGrade += $weightedGrade;
         }
+        \Log::info("Final trimester grade: {$trimesterGrade}");
 
         return $trimesterGrade;
     }

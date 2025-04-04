@@ -34,6 +34,7 @@ use App\Http\Controllers\StudyModeController;
 use App\Http\Controllers\EnrollmentCodeController;
 use App\Http\Controllers\ContactTypeController;
 use App\Http\Controllers\AssessmentAllocationSubmissionController;
+use App\Http\Controllers\StudentTranscriptController;
 
 Route::get('/', function () {
     return view('index');
@@ -199,13 +200,20 @@ Route::prefix('student')->group(function () {
     Route::delete('students/{student}/courses/{course}', [\App\Http\Controllers\StudentCourseController::class, 'destroy'])->name('students.courses.destroy');
 
     // Student Enrollments
-    Route::get('students/{student}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'index'])->name('students.enrollments.index');
-    Route::get('students/{student}/enrollments/create', [\App\Http\Controllers\StudentEnrollmentController::class, 'create'])->name('students.enrollments.create');
-    Route::post('students/{student}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'store'])->name('students.enrollments.store');
-    Route::get('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'show'])->name('students.enrollments.show');
-    Route::get('students/{student}/enrollments/{enrollment}/edit', [\App\Http\Controllers\StudentEnrollmentController::class, 'edit'])->name('students.enrollments.edit');
-    Route::put('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'update'])->name('students.enrollments.update');
-    Route::delete('students/{student}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'destroy'])->name('students.enrollments.destroy');
+    Route::get('students/{student?}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'index'])
+        ->name('students.enrollments.index');
+    Route::get('students/{student?}/enrollments/create', [\App\Http\Controllers\StudentEnrollmentController::class, 'create'])
+        ->name('students.enrollments.create');
+    Route::post('students/{student?}/enrollments', [\App\Http\Controllers\StudentEnrollmentController::class, 'store'])
+        ->name('students.enrollments.store');
+    Route::get('students/{student?}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'show'])
+        ->name('students.enrollments.show');
+    Route::get('students/{student?}/enrollments/{enrollment}/edit', [\App\Http\Controllers\StudentEnrollmentController::class, 'edit'])
+        ->name('students.enrollments.edit');
+    Route::put('students/{student?}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'update'])
+        ->name('students.enrollments.update');
+    Route::delete('students/{student?}/enrollments/{enrollment}', [\App\Http\Controllers\StudentEnrollmentController::class, 'destroy'])
+        ->name('students.enrollments.destroy');
 
     // Student Submissions
     Route::prefix('submissions')->name('students.submissions.')->group(function () {
@@ -349,5 +357,11 @@ Route::middleware('auth')->group(function () {
 Route::get('/csrf-token', function () {
     return response()->json(['token' => csrf_token()]);
 });
+
+// Student Transcript routes
+Route::get('students/{student?}/transcript', [App\Http\Controllers\StudentTranscriptController::class, 'show'])
+    ->name('students.transcript.show');
+Route::get('students/{student?}/transcript/download', [App\Http\Controllers\StudentTranscriptController::class, 'download'])
+    ->name('students.transcript.download');
 
 require __DIR__ . '/auth.php';
