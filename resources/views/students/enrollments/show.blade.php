@@ -113,7 +113,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-4 py-2" href="#progress" data-bs-toggle="pill">
-                            <i class="fas fa-chart-line me-2"></i>Assessment Progress
+                            <i class="fas fa-chart-line me-2"></i>Academic Performance
                         </a>
                     </li>
                 </ul>
@@ -443,13 +443,242 @@
                 <!-- Progress Tab -->
                 <div class="tab-pane fade" id="progress">
                     <div class="card border-0 shadow-sm rounded-3">
-                        <div class="card-body text-center py-5">
-                            <div class="empty-state">
-                                <div class="empty-state-icon mb-3">
-                                    <i class="fas fa-chart-line fa-3x text-brand-primary" style="opacity: 0.5;"></i>
+                        <div class="card-body py-4">
+                            <h4 class="mb-4 text-brand-primary"><i class="fas fa-calculator me-2"></i>Understanding Your Grades</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-header bg-brand-primary text-white py-3">
+                                            <h5 class="mb-0"><i class="fas fa-percentage me-2"></i>How Grades Are Calculated</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p>Your final grade for each module is calculated as a weighted average of all assessments within that module:</p>
+                                            
+                                            <ol class="mb-4">
+                                                <li class="mb-2">Each assessment is assigned a weight (percentage) that reflects its importance in the module.</li>
+                                                <li class="mb-2">Your score for each assessment is multiplied by its weight.</li>
+                                                <li class="mb-2">These weighted scores are added together to form your final module score.</li>
+                                                <li>Your final score is then converted to a letter grade using the grading scale.</li>
+                                            </ol>
+                                            
+                                            <div class="alert bg-brand-primary-light border-0">
+                                                <div class="d-flex">
+                                                    <div class="me-3">
+                                                        <i class="fas fa-formula text-brand-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>Formula:</strong><br>
+                                                        Module Grade = Σ (Assessment Score × Assessment Weight)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h5 class="text-brand-primary">Assessment progress will be displayed here</h5>
-                                <p class="text-muted">Track your progress across all subjects and modules.</p>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-header bg-brand-primary text-white py-3">
+                                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Grading Scale</h5>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover mb-0">
+                                                    <thead>
+                                                        <tr class="bg-brand-primary-light">
+                                                            <th class="px-3">Grade</th>
+                                                            <th class="px-3">Percentage Range</th>
+                                                            <th class="px-3">Classification</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge bg-success">A</span></td>
+                                                            <td class="px-3">85% - 100%</td>
+                                                            <td class="px-3">Distinction</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge bg-success">B+</span></td>
+                                                            <td class="px-3">75% - 84%</td>
+                                                            <td class="px-3">Merit Plus</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge badge-brand-secondary">B</span></td>
+                                                            <td class="px-3">65% - 74%</td>
+                                                            <td class="px-3">Merit</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge badge-brand-secondary">C+</span></td>
+                                                            <td class="px-3">60% - 64%</td>
+                                                            <td class="px-3">Credit Plus</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge bg-secondary">C</span></td>
+                                                            <td class="px-3">50% - 59%</td>
+                                                            <td class="px-3">Credit</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="px-3"><span class="badge bg-danger">F</span></td>
+                                                            <td class="px-3">0% - 49%</td>
+                                                            <td class="px-3">Fail</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-4">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-brand-primary text-white py-3">
+                                            <h5 class="mb-0"><i class="fas fa-puzzle-piece me-2"></i>Understanding Course Components</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-layer-group text-brand-primary me-2"></i>Course Structure Hierarchy</h6>
+                                                    <div class="d-flex mb-3">
+                                                        <div class="bg-brand-primary rounded-circle p-2 d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-graduation-cap text-white"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Course</h6>
+                                                            <p class="text-muted small mb-0">The complete program you're enrolled in (e.g., Bachelor of Business)</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex mb-3 ms-4">
+                                                        <div class="bg-brand-secondary rounded-circle p-2 d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                                            <i class="fas fa-book text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Subject</h6>
+                                                            <p class="text-muted small mb-0">Main area of study within your course (e.g., Accounting)</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex mb-3 ms-5">
+                                                        <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                                            <i class="fas fa-cube text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Module</h6>
+                                                            <p class="text-muted small mb-0">Specific topic or unit within a subject (e.g., Financial Reporting)</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex mb-3 ms-5">
+                                                        <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                                            <i class="fas fa-tasks text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Assessment</h6>
+                                                            <p class="text-muted small mb-0">Individual tasks that evaluate your knowledge (e.g., exams, assignments)</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-balance-scale text-brand-primary me-2"></i>Assessment Structure & Weights</h6>
+                                                    <p>Each module has its own assessment structure that defines how your performance will be measured:</p>
+                                                    
+                                                    <div class="d-flex mb-3 align-items-start">
+                                                        <div class="bg-brand-primary-light rounded p-2 d-flex align-items-center justify-content-center me-3" style="min-width: 36px; height: 36px;">
+                                                            <i class="fas fa-sitemap text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Module Assessment Structure</h6>
+                                                            <p class="text-muted small mb-0">Defines which assessment types (exams, projects, etc.) are included in a module</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex mb-3 align-items-start">
+                                                        <div class="bg-brand-primary-light rounded p-2 d-flex align-items-center justify-content-center me-3" style="min-width: 36px; height: 36px;">
+                                                            <i class="fas fa-balance-scale-left text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Module Assessment Weight</h6>
+                                                            <p class="text-muted small mb-0">Determines how much each assessment contributes to your final module grade</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex mb-3 align-items-start">
+                                                        <div class="bg-brand-primary-light rounded p-2 d-flex align-items-center justify-content-center me-3" style="min-width: 36px; height: 36px;">
+                                                            <i class="fas fa-percentage text-brand-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Subject Contribution</h6>
+                                                            <p class="text-muted small mb-0">How much each subject contributes to your overall course GPA</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-12 mb-4">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-brand-primary text-white py-3">
+                                            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Example Calculation</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p>For a module with 3 assessments:</p>
+                                            
+                                            <div class="table-responsive mb-3">
+                                                <table class="table table-bordered">
+                                                    <thead class="bg-brand-primary-light">
+                                                        <tr>
+                                                            <th>Assessment</th>
+                                                            <th>Weight</th>
+                                                            <th>Your Score</th>
+                                                            <th>Weighted Score</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Midterm Exam</td>
+                                                            <td>30%</td>
+                                                            <td>80%</td>
+                                                            <td>24% (80 × 0.3)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Practical Project</td>
+                                                            <td>50%</td>
+                                                            <td>75%</td>
+                                                            <td>37.5% (75 × 0.5)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Final Assignment</td>
+                                                            <td>20%</td>
+                                                            <td>90%</td>
+                                                            <td>18% (90 × 0.2)</td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot class="bg-brand-primary-light">
+                                                        <tr>
+                                                            <th colspan="3" class="text-end">Final Module Score:</th>
+                                                            <th>79.5% (B+)</th>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            
+                                            <div class="alert bg-brand-secondary-light border-0">
+                                                <div class="d-flex">
+                                                    <div class="me-3">
+                                                        <i class="fas fa-info-circle text-brand-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>Note:</strong> You must pass each individual assessment to pass the module. A passing grade is typically 50% or higher, depending on the specific requirements of each module.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
