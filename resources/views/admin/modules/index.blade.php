@@ -58,6 +58,11 @@
                                                 <i class="fas fa-tasks me-1"></i>
                                                 <span>Manage Assessments</span>
                                             </a>
+                                            <a href="{{ route('admin.courses.subjects.modules.contents.index', [$subject, $module]) }}" 
+                                               class="btn btn-link btn-sm text-primary p-0 ms-3">
+                                                <i class="fas fa-folder-open me-1"></i>
+                                                <span>Manage Content</span>
+                                            </a>
                                         </div>
                                     </div>
                                 </td>
@@ -65,6 +70,10 @@
                                     <span class="badge rounded-pill bg-info">
                                         <i class="fas fa-tasks me-1"></i>
                                         {{ $module->assessments->count() ?? 0 }} Assessments
+                                    </span>
+                                    <span class="badge rounded-pill bg-success ms-1">
+                                        <i class="fas fa-folder-open me-1"></i>
+                                        {{ $module->contents->count() ?? 0 }} Content Items
                                     </span>
                                 </td>
                                 <td>

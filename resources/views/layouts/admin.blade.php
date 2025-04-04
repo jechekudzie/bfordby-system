@@ -184,6 +184,18 @@
                                             </a>
                                         </li>
 
+                                        <!-- E-Library -->
+                                        <li class="nav-item mt-3">
+                                            <div class="nav-category-header">
+                                                <span class="nav-category-text">E-Library</span>
+                                            </div>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link {{ Request::routeIs('admin.library.*') ? 'active' : '' }}" href="{{ route('admin.library.index') }}">
+                                                <span class="nav-link-text">Learning Materials</span>
+                                            </a>
+                                        </li>
+
                                         <!-- System Configuration -->
                                         <li class="nav-item mt-3">
                                             <div class="nav-category-header">

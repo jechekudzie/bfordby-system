@@ -35,6 +35,9 @@ use App\Http\Controllers\EnrollmentCodeController;
 use App\Http\Controllers\ContactTypeController;
 use App\Http\Controllers\AssessmentAllocationSubmissionController;
 use App\Http\Controllers\StudentTranscriptController;
+use App\Http\Controllers\ModuleContentController;
+use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\Student\LibraryController as StudentLibraryController;
 
 Route::get('/', function () {
     return view('index');
@@ -44,6 +47,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard & Utilities
     Route::get('utilities', [\App\Http\Controllers\UtilitiesController::class, 'index'])->name('utilities.index');
     Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
+    // E-Library Routes
+    Route::get('library', [\App\Http\Controllers\LibraryController::class, 'index'])->name('library.index');
+    Route::get('library/modules/{module}', [\App\Http\Controllers\LibraryController::class, 'showModule'])->name('library.modules.show');
 
     // Academic Structure Routes (Course -> Subject -> Module -> Assessment)
     // Courses
@@ -70,6 +77,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('subjects/{subject}/modules/{module}/edit', [ModuleController::class, 'edit'])->name('courses.subjects.modules.edit');
     Route::put('subjects/{subject}/modules/{module}', [ModuleController::class, 'update'])->name('courses.subjects.modules.update');
     Route::delete('subjects/{subject}/modules/{module}', [ModuleController::class, 'destroy'])->name('courses.subjects.modules.destroy');
+
+    // Module Contents
+    Route::get('subjects/{subject}/modules/{module}/contents', [\App\Http\Controllers\ModuleContentController::class, 'index'])->name('courses.subjects.modules.contents.index');
+    Route::get('subjects/{subject}/modules/{module}/contents/create', [\App\Http\Controllers\ModuleContentController::class, 'create'])->name('courses.subjects.modules.contents.create');
+    Route::post('subjects/{subject}/modules/{module}/contents', [\App\Http\Controllers\ModuleContentController::class, 'store'])->name('courses.subjects.modules.contents.store');
+    Route::get('subjects/{subject}/modules/{module}/contents/{content}/edit', [\App\Http\Controllers\ModuleContentController::class, 'edit'])->name('courses.subjects.modules.contents.edit');
+    Route::put('subjects/{subject}/modules/{module}/contents/{content}', [\App\Http\Controllers\ModuleContentController::class, 'update'])->name('courses.subjects.modules.contents.update');
+    Route::delete('subjects/{subject}/modules/{module}/contents/{content}', [\App\Http\Controllers\ModuleContentController::class, 'destroy'])->name('courses.subjects.modules.contents.destroy');
+    Route::post('subjects/{subject}/modules/{module}/contents/order', [\App\Http\Controllers\ModuleContentController::class, 'updateOrder'])->name('courses.subjects.modules.contents.order');
 
     // Assessments (nested under modules)
     Route::get('subjects/{subject}/modules/{module}/assessments', [AssessmentController::class, 'index'])->name('courses.subjects.modules.assessments.index');
@@ -176,9 +192,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::prefix('student')->group(function () {
+    // Student Dashboard
+    Route::get('/', function() {
+        return view('student.dashboard');
+    })->name('student.dashboard');
+    
     // Student Assessments
     Route::get('assessments', [\App\Http\Controllers\StudentAssessmentController::class, 'index'])->name('students.assessments.list');
     Route::get('assessments/{allocation}', [\App\Http\Controllers\StudentAssessmentController::class, 'show'])->name('students.assessments.show');
+
+    // E-Library Routes for Students
+    Route::get('library', [\App\Http\Controllers\Student\LibraryController::class, 'index'])->name('student.library.index');
+    Route::get('library/modules/{module}', [\App\Http\Controllers\Student\LibraryController::class, 'showModule'])->name('student.library.modules.show');
 
     // Core Student Management
     Route::get('students', [\App\Http\Controllers\StudentController::class, 'index'])->name('students.index');
@@ -341,6 +366,10 @@ Route::prefix('student')->group(function () {
     Route::post('students/{student}/semesters/{semester}/residency', [\App\Http\Controllers\SemesterResidencyController::class, 'store'])->name('students.semesters.residency.store');
     Route::put('students/{student}/semesters/{semester}/residency', [\App\Http\Controllers\SemesterResidencyController::class, 'update'])->name('students.semesters.residency.update');
     Route::delete('students/{student}/semesters/{semester}/residency', [\App\Http\Controllers\SemesterResidencyController::class, 'destroy'])->name('students.semesters.residency.destroy');
+
+    // Student Transcript
+    Route::get('/transcript', [StudentTranscriptController::class, 'show'])->name('student.transcript.show');
+    Route::get('/transcript/download', [StudentTranscriptController::class, 'download'])->name('student.transcript.download');
 });
 
 // Authentication Routes
@@ -359,9 +388,7 @@ Route::get('/csrf-token', function () {
 });
 
 // Student Transcript routes
-Route::get('students/{student?}/transcript', [App\Http\Controllers\StudentTranscriptController::class, 'show'])
-    ->name('students.transcript.show');
-Route::get('students/{student?}/transcript/download', [App\Http\Controllers\StudentTranscriptController::class, 'download'])
-    ->name('students.transcript.download');
+Route::get('students/{student?}/transcript', [StudentTranscriptController::class, 'show'])->name('students.transcript.show');
+Route::get('students/{student?}/transcript/download', [StudentTranscriptController::class, 'download'])->name('students.transcript.download');
 
 require __DIR__ . '/auth.php';

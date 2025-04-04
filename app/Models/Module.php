@@ -122,6 +122,11 @@ class Module extends Model
         return $this->hasMany(Assessment::class);
     }
 
+    public function contents()
+    {
+        return $this->hasMany(ModuleContent::class)->orderBy('sort_order');
+    }
+
     public function getSlugOptions() : SlugOptions
      {
          return SlugOptions::create()
