@@ -106,7 +106,7 @@
                                     @if($selectedOption)
                                         {{ $selectedOption->option_text }}
                                     @elseif($answer)
-                                        {{ $answer }}
+                                        {{ is_array($answer) ? json_encode($answer) : $answer }}
                                     @else
                                         No answer provided
                                     @endif
