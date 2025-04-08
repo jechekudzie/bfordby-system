@@ -269,4 +269,191 @@ class StudentTranscriptController extends Controller
         // Download the PDF
         return $pdf->download($filename);
     }
+
+    public function simplified(Student $student = null)
+    {
+        // If no student is provided, get the first student
+        if (!$student || !$student->exists) {
+            $student = Student::first();
+            
+            // If there are no students, redirect to the students list
+            if (!$student) {
+                return redirect()->route('students.index')
+                    ->with('error', 'No student found. Please create a student first.');
+            }
+        }
+        
+        // Get active enrollments for the student
+        $enrollments = $student->enrollments()->where('status', 'active')->get();
+        
+        if ($enrollments->isEmpty()) {
+            return redirect()->route('students.index')->with('error', 'No active enrollments found for this student.');
+        }
+        
+        // Get enrollment code IDs for this student's enrollments
+        $enrollmentCodeIds = $enrollments->pluck('enrollment_code_id')->unique();
+        
+        // Get all semesters for this student's enrollment codes via assessment allocations
+        $semesters = Semester::whereHas('assessmentAllocations', function($query) use ($enrollmentCodeIds) {
+            $query->whereIn('enrollment_code_id', $enrollmentCodeIds);
+        })->orderBy('academic_year')->orderBy('name')->get();
+        
+        // Structure to hold all transcript data
+        $transcriptData = [];
+        
+        foreach ($semesters as $semester) {
+            $trimesterData = [
+                'semester' => $semester,
+                'subjects' => []
+            ];
+            
+            // Get all courses for this student's enrollments
+            $courseIds = $enrollments->pluck('course_id')->unique();
+            
+            // Get subjects for these courses
+            $subjects = Subject::whereIn('course_id', $courseIds)->get();
+            
+            foreach ($subjects as $subject) {
+                $subjectData = [
+                    'subject' => $subject,
+                    'modules' => []
+                ];
+                
+                // Get modules for this subject
+                $modules = $subject->modules;
+                
+                foreach ($modules as $module) {
+                    $moduleData = [
+                        'module' => $module,
+                        'grade' => $module->calculateTrimesterGrade($student->id, $semester->id),
+                        'grade_classification' => $module->getGradeClassification(
+                            $module->calculateTrimesterGrade($student->id, $semester->id)
+                        )
+                    ];
+                    
+                    // Only check if there are assessments for this module in this semester
+                    $hasAssessments = $module->assessments()
+                        ->whereHas('allocations', function($query) use ($semester, $enrollmentCodeIds) {
+                            $query->where('semester_id', $semester->id)
+                                  ->whereIn('enrollment_code_id', $enrollmentCodeIds);
+                        })
+                        ->exists();
+                    
+                    // Only add module if it has assessments
+                    if ($hasAssessments) {
+                        $subjectData['modules'][] = $moduleData;
+                    }
+                }
+                
+                // Only add subject if it has modules with assessments
+                if (!empty($subjectData['modules'])) {
+                    $trimesterData['subjects'][] = $subjectData;
+                }
+            }
+            
+            // Only add trimester if it has subjects with modules and assessments
+            if (!empty($trimesterData['subjects'])) {
+                $transcriptData[] = $trimesterData;
+            }
+        }
+        
+        return view('students.transcript.simplified', compact('student', 'transcriptData'));
+    }
+
+    /**
+     * Download the student's simplified transcript as PDF
+     */
+    public function downloadSimplified(Request $request, Student $student = null)
+    {
+        // If no student is provided, get the first student
+        if (!$student || !$student->exists) {
+            $student = Student::first();
+            
+            if (!$student) {
+                return redirect()->route('students.index')
+                    ->with('error', 'No student found. Please create a student first.');
+            }
+        }
+
+        // Get active enrollments for the student
+        $enrollments = $student->enrollments()->where('status', 'active')->get();
+        
+        if ($enrollments->isEmpty()) {
+            return redirect()->route('students.index')->with('error', 'No active enrollments found for this student.');
+        }
+        
+        // Get enrollment code IDs for this student's enrollments
+        $enrollmentCodeIds = $enrollments->pluck('enrollment_code_id')->unique();
+        
+        // Get all semesters for this student's enrollment codes via assessment allocations
+        $semesters = Semester::whereHas('assessmentAllocations', function($query) use ($enrollmentCodeIds) {
+            $query->whereIn('enrollment_code_id', $enrollmentCodeIds);
+        })->orderBy('academic_year')->orderBy('name')->get();
+        
+        // Structure to hold all transcript data
+        $transcriptData = [];
+        
+        foreach ($semesters as $semester) {
+            $trimesterData = [
+                'semester' => $semester,
+                'subjects' => []
+            ];
+            
+            // Get all courses for this student's enrollments
+            $courseIds = $enrollments->pluck('course_id')->unique();
+            
+            // Get subjects for these courses
+            $subjects = Subject::whereIn('course_id', $courseIds)->get();
+            
+            foreach ($subjects as $subject) {
+                $subjectData = [
+                    'subject' => $subject,
+                    'modules' => []
+                ];
+                
+                // Get modules for this subject
+                $modules = $subject->modules;
+                
+                foreach ($modules as $module) {
+                    $moduleData = [
+                        'module' => $module,
+                        'grade' => $module->calculateTrimesterGrade($student->id, $semester->id),
+                        'grade_classification' => $module->getGradeClassification(
+                            $module->calculateTrimesterGrade($student->id, $semester->id)
+                        )
+                    ];
+                    
+                    // Only check if there are assessments for this module in this semester
+                    $hasAssessments = $module->assessments()
+                        ->whereHas('allocations', function($query) use ($semester, $enrollmentCodeIds) {
+                            $query->where('semester_id', $semester->id)
+                                  ->whereIn('enrollment_code_id', $enrollmentCodeIds);
+                        })
+                        ->exists();
+                    
+                    // Only add module if it has assessments
+                    if ($hasAssessments) {
+                        $subjectData['modules'][] = $moduleData;
+                    }
+                }
+                
+                // Only add subject if it has modules with assessments
+                if (!empty($subjectData['modules'])) {
+                    $trimesterData['subjects'][] = $subjectData;
+                }
+            }
+            
+            // Only add trimester if it has subjects with modules and assessments
+            if (!empty($trimesterData['subjects'])) {
+                $transcriptData[] = $trimesterData;
+            }
+        }
+
+        $date = date('F j, Y');
+        $filename = 'simplified_transcript_' . $student->student_number . '.pdf';
+        
+        $pdf = Pdf::loadView('students.transcript.pdf-simplified', compact('student', 'transcriptData', 'date'));
+        
+        return $pdf->download($filename);
+    }
 } 

@@ -118,9 +118,14 @@
                     </li>
                 </ul>
                 
-                <a href="{{ route('students.transcript.show', $enrollment->student) }}" class="btn btn-brand-primary">
-                    <i class="fas fa-file-alt me-2"></i>Academic Transcript
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('students.transcript.simplified', $enrollment->student) }}" class="btn btn-brand-secondary">
+                        <i class="fas fa-file-alt me-2"></i>Simplified Transcript
+                    </a>
+                    <a href="{{ route('students.transcript.show', $enrollment->student) }}" class="btn btn-brand-primary">
+                        <i class="fas fa-file-alt me-2"></i>Academic Transcript
+                    </a>
+                </div>
             </div>
 
             <div class="tab-content">

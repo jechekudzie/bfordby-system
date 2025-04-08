@@ -39,11 +39,116 @@ use App\Http\Controllers\ModuleContentController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\Student\LibraryController as StudentLibraryController;
 
+
+use App\Http\Controllers\Admin\OrganisationsController;
+use App\Http\Controllers\Admin\OrganisationRolesController;
+use App\Http\Controllers\Admin\OrganisationTypeController;
+use App\Http\Controllers\Admin\OrganisationUsersController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Organisation\OrganisationDashboardController;
+use App\Http\Controllers\Admin\OrganisationChildrenController;
+
+
 Route::get('/', function () {
-    return view('index');
+
+    return view('auth.login');
 });
 
+
+Route::prefix('admin')->group(function () {
+
+    // Admin dashboard routes
+    Route::get('/', function () {
+        return view('admin.index');
+    })->name('admin.index');
+
+    // Organisation Types Routes
+    Route::get('organisation-types', [OrganisationTypeController::class, 'index'])->name('admin.organisation-types.index');
+    Route::post('organisation-types/store', [OrganisationTypeController::class, 'store'])->name('admin.organisation-types.store');
+    Route::post('organisation-types/{organisationType}', [OrganisationTypeController::class, 'organisationTypeOrganisation'])->name('admin.organisation-types.organisation-type');
+    Route::get('/admin/organisation-types/manage', [OrganisationTypeController::class, 'manage'])->name('admin.organisation-types.manage');
+
+    // Organization Types Routes - these are the only ones we should have
+    Route::get('/admin/organisation-types/create/{parent?}', [OrganisationTypeController::class, 'createOrgType'])
+        ->name('admin.organisation-types.create')->where(['parent' => '[0-9]+']);
+    // store organisation type
+    Route::post('/admin/organisation-types', [OrganisationTypeController::class, 'storeOrgType'])->name('admin.organisation-types.store');
+    // edit organisation type
+    Route::get('/admin/organisation-types/{organisationType}/edit', [OrganisationTypeController::class, 'edit'])->name('admin.organisation-types.edit');
+    Route::put('/admin/organisation-types/{organisationType}', [OrganisationTypeController::class, 'update'])->name('admin.organisation-types.update');
+    Route::delete('/admin/organisation-types/{organisationType}', [OrganisationTypeController::class, 'destroy'])
+        ->name('admin.organisation-types.destroy')->where(['organisationType' => '[a-z0-9-]+']);
+
+    // Organisations Routes
+    Route::get('organisations', [OrganisationsController::class, 'index'])->name('admin.organisations.index');
+    Route::post('organisations/store', [OrganisationsController::class, 'store'])->name('admin.organisations.store');
+    Route::patch('organisations/{organisation}/update', [OrganisationsController::class, 'update'])->name('admin.organisations.update');
+    Route::delete('organisations/{organisation}', [OrganisationsController::class, 'destroy'])->name('admin.organisations.destroy');
+    Route::get('organisations/manage', [OrganisationsController::class, 'manageOrganisations'])->name('admin.organisations.manage');
+
+    // routes for editing organisations
+    Route::get('/admin/organisations/{organisation}/edit', [OrganisationsController::class, 'edit'])
+        ->name('admin.organisations.edit');
+
+    // Route for creating root-level organizations (no parent)
+    Route::get('/admin/organisations/create/{type}', [OrganisationsController::class, 'createRoot'])
+        ->name('admin.organisations.create-root')
+        ->where(['type' => '[0-9]+']);
+
+    // Route for creating organizations with a parent
+    Route::get('/admin/organisations/{parent}/create/{type}', [OrganisationsController::class, 'createChild'])
+        ->name('admin.organisations.create-child')
+        ->where(['parent' => '[0-9]+', 'type' => '[0-9]+']);
+
+    // Route for storing child organizations
+    Route::post('/admin/organisations/store-child', [OrganisationsController::class, 'storeChild'])
+        ->name('admin.organisations.store-child');
+
+    //dynamic dropdowns
+    Route::get('/organisations/hierarchy-test', [OrganisationsController::class, 'hierarchyTest'])
+        ->name('admin.organisations.hierarchy-test');
+    Route::get('/organisations/hierarchy-by-type', [OrganisationsController::class, 'hierarchyByType'])
+        ->name('admin.organisations.hierarchy-by-type');
+
+    // Organisation Roles Routes
+    Route::get('organisation-roles/{organisation}', [OrganisationRolesController::class, 'index'])->name('admin.organisation-roles.index');
+    Route::post('organisation-roles/{organisation}/store', [OrganisationRolesController::class, 'store'])->name('admin.organisation-roles.store');
+    Route::get('organisation-roles/{role}/edit', [OrganisationRolesController::class, 'edit'])->name('admin.organisation-roles.edit');
+    Route::patch('organisation-roles/{role}/update', [OrganisationRolesController::class, 'update'])->name('admin.organisation-roles.update');
+    Route::delete('organisation-roles/{role}', [OrganisationRolesController::class, 'destroy'])->name('admin.organisation-roles.destroy');
+
+    // Organisation Users Routes
+    Route::get('organisation-users/{organisation}', [OrganisationUsersController::class, 'index'])->name('admin.organisation-users.index');
+    Route::post('organisation-users/{organisation}/store', [OrganisationUsersController::class, 'store'])->name('admin.organisation-users.store');
+    Route::patch('organisation-users/{user}/update', [OrganisationUsersController::class, 'update'])->name('admin.organisation-users.update');
+    Route::delete('organisation-users/{user}/{organisation}', [OrganisationUsersController::class, 'destroy'])->name('admin.organisation-users.destroy');
+
+    // Permissions Routes
+    Route::prefix('permissions')->name('admin.')->group(function () {
+        Route::group(['prefix' => 'permissions', 'as' => 'permissions.'], function () {
+            Route::get('/', [PermissionController::class, 'index'])->name('index');
+            Route::post('/store', [PermissionController::class, 'store'])->name('store');
+            Route::get('/{permission}/edit', [PermissionController::class, 'edit'])->name('edit');
+            Route::patch('/{permission}/update', [PermissionController::class, 'update'])->name('update');
+            Route::delete('/{permission}', [PermissionController::class, 'destroy'])->name('destroy');
+            Route::get('/{organisation}/{role}/assignPermission', [PermissionController::class, 'assignPermission'])->name('assign');
+            Route::post('/{organisation}/{role}/assignPermissionToRole', [PermissionController::class, 'assignPermissionToRole'])->name('assign-permission-to-role');
+        });
+    });
+
+});
+
+//organisation dashboard
+Route::get('/organisation/dashboard/check/{organisation}', [OrganisationDashboardController::class, 'checkDashboardAccess'])->name('organisation.check-dashboard-access')->middleware('auth');
+Route::get('/organisation/dashboard', [OrganisationDashboardController::class, 'dashboard'])->name('organisation.dashboard')->middleware('auth');
+Route::get('/{organisation}/index', [OrganisationDashboardController::class, 'index'])->name('organisation.dashboard.index')->middleware('auth');
+Route::get('/{organisation}/historical-dashboard', [OrganisationDashboardController::class, 'historicalDashboard'])->name('organisation.dashboard.historical')->middleware('auth');
+
+Route::get('/rural-district-councils', [OrganisationDashboardController::class, 'ruralDistrictCouncils'])->name('organisation.dashboard.rural-district-councils')->middleware('auth');
+
+
 Route::prefix('admin')->name('admin.')->group(function () {
+
     // Dashboard & Utilities
     Route::get('utilities', [\App\Http\Controllers\UtilitiesController::class, 'index'])->name('utilities.index');
     Route::get('/', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
@@ -127,7 +232,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // System Settings
     // Address Types
     Route::resource('address-types', \App\Http\Controllers\AddressTypeController::class)->except(['show']);
-    
+
     // Contact Types
     Route::get('contact-types', [\App\Http\Controllers\ContactTypeController::class, 'index'])->name('contact-types.index');
     Route::get('contact-types/create', [\App\Http\Controllers\ContactTypeController::class, 'create'])->name('contact-types.create');
@@ -191,12 +296,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
+
+
 Route::prefix('student')->group(function () {
     // Student Dashboard
-    Route::get('/', function() {
+    Route::get('/', function () {
         return view('student.dashboard');
     })->name('student.dashboard');
-    
+
     // Student Assessments
     Route::get('assessments', [\App\Http\Controllers\StudentAssessmentController::class, 'index'])->name('students.assessments.list');
     Route::get('assessments/{allocation}', [\App\Http\Controllers\StudentAssessmentController::class, 'show'])->name('students.assessments.show');
@@ -370,6 +477,8 @@ Route::prefix('student')->group(function () {
     // Student Transcript
     Route::get('/transcript', [StudentTranscriptController::class, 'show'])->name('student.transcript.show');
     Route::get('/transcript/download', [StudentTranscriptController::class, 'download'])->name('student.transcript.download');
+    Route::get('/transcript/simplified', [StudentTranscriptController::class, 'simplified'])->name('student.transcript.simplified');
+    Route::get('/transcript/simplified/download', [StudentTranscriptController::class, 'downloadSimplified'])->name('student.transcript.simplified.download');
 });
 
 // Authentication Routes
@@ -387,8 +496,10 @@ Route::get('/csrf-token', function () {
     return response()->json(['token' => csrf_token()]);
 });
 
-// Student Transcript routes
+require __DIR__ . '/auth.php';
+
+// Student Transcript routes (Admin access)
 Route::get('students/{student?}/transcript', [StudentTranscriptController::class, 'show'])->name('students.transcript.show');
 Route::get('students/{student?}/transcript/download', [StudentTranscriptController::class, 'download'])->name('students.transcript.download');
-
-require __DIR__ . '/auth.php';
+Route::get('students/{student?}/transcript/simplified', [StudentTranscriptController::class, 'simplified'])->name('students.transcript.simplified');
+Route::get('students/{student?}/transcript/simplified/download', [StudentTranscriptController::class, 'downloadSimplified'])->name('students.transcript.simplified.download');

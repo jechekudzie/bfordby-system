@@ -23,6 +23,7 @@
                             <i class="fas fa-arrow-left me-2"></i>Back to Student
                         </a>
                     @endif
+                
                     <a href="{{ route('students.transcript.download', $student) }}" class="btn btn-light">
                         <i class="fas fa-download me-2"></i>Download PDF
                     </a>

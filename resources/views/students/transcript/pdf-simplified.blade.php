@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Transcript - {{ $student->first_name }} {{ $student->last_name }}</title>
+    <title>Transcript - {{ $student->first_name }} {{ $student->last_name }}</title>
     <style>
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -146,6 +146,24 @@
         .grade-info table {
             margin-bottom: 0;
         }
+        
+        .badge {
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background-color: #FBD801;
+            color: #154832;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -193,66 +211,30 @@
                     <table>
                         <thead>
                             <tr>
-                                <th width="25%">Module</th>
-                                <th width="45%">Assessments</th>
-                                <th width="10%" class="centered">Status</th>
-                                <th width="10%" class="centered">Grade</th>
-                                <th width="10%" class="centered">Class</th>
+                                <th width="60%">Module</th>
+                                <th width="20%" class="centered">Status</th>
+                                <th width="20%" class="centered">Grade</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($subject['modules'] as $module)
                                 <tr>
                                     <td>
-                                        <strong>{{ $module['module']->name }}</strong><br>
-                                        <span style="font-size:10px">{{ count($module['assessments']) }} Assessment(s)</span>
-                                    </td>
-                                    <td>
-                                        @foreach($module['assessments'] as $assessment)
-                                            <div style="margin-bottom:5px">
-                                                {{ $assessment['assessment']->name }}: 
-                                                @if($assessment['graded'])
-                                                    <strong>{{ number_format($assessment['grade'], 1) }}%</strong>
-                                                @elseif($assessment['submitted'])
-                                                    Submitted
-                                                @else
-                                                    Not Submitted
-                                                @endif
-                                            </div>
-                                        @endforeach
+                                        <strong>{{ $module['module']->name }}</strong>
                                     </td>
                                     <td class="centered">
                                         @php
-                                            $allAssessed = true;
-                                            $allSubmitted = true;
-                                            
-                                            foreach($module['assessments'] as $assessment) {
-                                                if(!$assessment['graded']) {
-                                                    $allAssessed = false;
-                                                }
-                                                if(!$assessment['submitted']) {
-                                                    $allSubmitted = false;
-                                                }
-                                            }
+                                            $isComplete = $module['grade'] !== null;
                                         @endphp
                                         
-                                        @if($allAssessed)
+                                        @if($isComplete)
                                             Completed
-                                        @elseif($allSubmitted)
-                                            Pending
                                         @else
                                             Incomplete
                                         @endif
                                     </td>
-                                    <td class="centered grade">
-                                        @if($allAssessed)
-                                            {{ number_format($module['grade'], 1) }}%
-                                        @else
-                                            --
-                                        @endif
-                                    </td>
                                     <td class="centered">
-                                        @if($allAssessed)
+                                        @if($isComplete)
                                             <span class="classification {{ strtolower($module['grade_classification']) }}">
                                                 {{ $module['grade_classification'] }}
                                             </span>
