@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('middle_name')->nullable();
             $table->string('last_name');
             $table->string('student_number')->unique()->nullable();
+            $table->text('personal_statement')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->unsignedBigInteger('gender_id')->nullable();
             $table->date('enrollment_date')->nullable();

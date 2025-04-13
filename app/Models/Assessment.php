@@ -18,6 +18,21 @@ class Assessment extends Model
     protected $dates = ['due_date'];
 
     /**
+     * Get students who have submissions for this assessment
+     */
+    public function students()
+    {
+        return $this->hasManyThrough(
+            Student::class,
+            AssessmentAllocationSubmission::class,
+            'assessment_allocation_id', // Foreign key on AssessmentAllocationSubmission
+            'id', // Foreign key on Student
+            'id', // Local key on Assessment
+            'student_id' // Local key on AssessmentAllocationSubmission
+        )->distinct();
+    }
+
+    /**
      * Get the contribution weight for this assessment type
      */
     public function getContributionWeight()
@@ -83,11 +98,6 @@ class Assessment extends Model
     public function allocations()
     {
         return $this->hasMany(AssessmentAllocation::class);
-    }
-
-    public function questions()
-    {
-        return $this->hasMany(AssessmentQuestion::class);
     }
 
     public function getSlugOptions() : SlugOptions

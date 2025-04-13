@@ -510,6 +510,154 @@
                     </div>
                 </div>
 
+                <!-- Next of Kin Card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-friends text-primary me-2"></i> Next of Kin
+                        </h6>
+                        <a href="{{ route('students.next-of-kin.create', $student) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add Next of Kin
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if($student->nextOfKins->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th class="text-muted">
+                                            <i class="fas fa-user text-primary me-2"></i> Name
+                                        </th>
+                                        <th class="text-muted">
+                                            <i class="fas fa-heart text-primary me-2"></i> Relationship
+                                        </th>
+                                        <th class="text-muted">
+                                            <i class="fas fa-phone text-primary me-2"></i> Contact Details
+                                        </th>
+                                        <th class="text-muted">
+                                            <i class="fas fa-exclamation-triangle text-primary me-2"></i> Emergency Contact
+                                        </th>
+                                        <th class="text-muted" width="15%">
+                                            <i class="fas fa-cog text-primary me-2"></i> Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($student->nextOfKins as $nextOfKin)
+                                    <tr>
+                                        <td>{{ $nextOfKin->first_name }} {{ $nextOfKin->last_name }}</td>
+                                        <td>{{ $nextOfKin->relationship }}</td>
+                                        <td>
+                                            @if($nextOfKin->phone)
+                                            <div><i class="fas fa-phone text-primary me-2"></i>{{ $nextOfKin->phone }}</div>
+                                            @endif
+                                            @if($nextOfKin->email)
+                                            <div><i class="fas fa-envelope text-primary me-2"></i>{{ $nextOfKin->email }}</div>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($nextOfKin->is_emergency_contact)
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i> Yes
+                                            </span>
+                                            @else
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-times me-1"></i> No
+                                            </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ route('students.next-of-kin.edit', ['student' => $student, 'next_of_kin' => $nextOfKin]) }}"
+                                                    class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger"
+                                                    onclick="confirmDelete('{{ route('students.next-of-kin.destroy', ['student' => $student, 'next_of_kin' => $nextOfKin]) }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No next of kin records found for this student.</p>
+                            <a href="{{ route('students.next-of-kin.create', $student) }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Add First Next of Kin
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Personal Statement Card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-file-alt text-primary me-2"></i> Personal Statement
+                        </h6>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonalStatementModal">
+                            <i class="fas fa-edit me-1"></i> Edit Statement
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        @if($student->personal_statement)
+                            <div class="personal-statement">
+                                {!! nl2br(e($student->personal_statement)) !!}
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No personal statement has been added yet.</p>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPersonalStatementModal">
+                                    <i class="fas fa-plus me-1"></i> Add Personal Statement
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Personal Statement Edit Modal -->
+                <div class="modal fade" id="editPersonalStatementModal" tabindex="-1" aria-labelledby="editPersonalStatementModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <form action="{{ route('students.personal-statement.update', $student->slug) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editPersonalStatementModalLabel">
+                                        <i class="fas fa-file-alt text-primary me-2"></i> Edit Personal Statement
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="personal_statement" class="form-label">Your Personal Statement</label>
+                                        <textarea class="form-control @error('personal_statement') is-invalid @enderror" 
+                                                  id="personal_statement" name="personal_statement" rows="10">{{ old('personal_statement', $student->personal_statement) }}</textarea>
+                                        <div class="form-text">Write a statement about yourself, your goals, and why you chose to study at this institution.</div>
+                                        @error('personal_statement')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i> Save Statement
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Address Information Card -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">

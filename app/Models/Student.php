@@ -21,6 +21,7 @@ class Student extends Model
         'status',
         'title_id',
         'student_number',
+        'personal_statement',
         'slug'
     ];
 
@@ -125,5 +126,13 @@ class Student extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    /**
+     * Get the next of kins for the student.
+     */
+    public function nextOfKins()
+    {
+        return $this->hasMany(NextOfKin::class);
     }
 }

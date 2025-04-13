@@ -31,6 +31,14 @@ class Course extends Model
     }
 
     /**
+     * Get all modules for this course through subjects
+     */
+    public function modules()
+    {
+        return $this->hasManyThrough(Module::class, Subject::class);
+    }
+
+    /**
      * The study modes that belong to the course.
      */
     public function studyModes()

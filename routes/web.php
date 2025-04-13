@@ -47,6 +47,7 @@ use App\Http\Controllers\Admin\OrganisationUsersController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Organisation\OrganisationDashboardController;
 use App\Http\Controllers\Admin\OrganisationChildrenController;
+use App\Http\Controllers\NextOfKinController;
 
 
 Route::get('/', function () {
@@ -166,6 +167,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('courses/{course}/edit', [\App\Http\Controllers\CourseController::class, 'edit'])->name('courses.edit');
     Route::put('courses/{course}', [\App\Http\Controllers\CourseController::class, 'update'])->name('courses.update');
     Route::delete('courses/{course}', [\App\Http\Controllers\CourseController::class, 'destroy'])->name('courses.destroy');
+    Route::get('courses/{course}/students', [\App\Http\Controllers\CourseController::class, 'students'])->name('courses.students');
 
     // Subjects (nested under courses)
     Route::get('subjects/{course}', [SubjectController::class, 'index'])->name('courses.subjects.index');
@@ -318,8 +320,29 @@ Route::prefix('student')->group(function () {
     Route::post('students', [\App\Http\Controllers\StudentController::class, 'store'])->name('students.store');
     Route::get('students/{student}', [\App\Http\Controllers\StudentController::class, 'show'])->name('students.show');
     Route::get('students/{student}/edit', [\App\Http\Controllers\StudentController::class, 'edit'])->name('students.edit');
-    Route::put('students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update');
+    Route::patch('students/{student}', [\App\Http\Controllers\StudentController::class, 'update'])->name('students.update');
     Route::delete('students/{student}', [\App\Http\Controllers\StudentController::class, 'destroy'])->name('students.destroy');
+    Route::patch('/students/{student}/personal-statement', [\App\Http\Controllers\StudentController::class, 'updatePersonalStatement'])
+        ->name('students.personal-statement.update');
+
+    // Course Management Routes
+    Route::get('courses', [\App\Http\Controllers\CourseController::class, 'index'])->name('courses.index');
+    Route::get('courses/create', [\App\Http\Controllers\CourseController::class, 'create'])->name('courses.create');
+    Route::post('courses', [\App\Http\Controllers\CourseController::class, 'store'])->name('courses.store');
+    Route::get('courses/{course}', [\App\Http\Controllers\CourseController::class, 'show'])->name('courses.show');
+    Route::get('courses/{course}/edit', [\App\Http\Controllers\CourseController::class, 'edit'])->name('courses.edit');
+    Route::put('courses/{course}', [\App\Http\Controllers\CourseController::class, 'update'])->name('courses.update');
+    Route::delete('courses/{course}', [\App\Http\Controllers\CourseController::class, 'destroy'])->name('courses.destroy');
+    Route::get('courses/{course}/students', [\App\Http\Controllers\CourseController::class, 'students'])->name('courses.students');
+
+    // Assessment Routes
+    Route::get('assessments', [\App\Http\Controllers\AssessmentController::class, 'index'])->name('assessments.index');
+    Route::get('assessments/create', [\App\Http\Controllers\AssessmentController::class, 'create'])->name('assessments.create');
+    Route::post('assessments', [\App\Http\Controllers\AssessmentController::class, 'store'])->name('assessments.store');
+    Route::get('assessments/{assessment}', [\App\Http\Controllers\AssessmentController::class, 'show'])->name('assessments.show');
+    Route::get('assessments/{assessment}/edit', [\App\Http\Controllers\AssessmentController::class, 'edit'])->name('assessments.edit');
+    Route::put('assessments/{assessment}', [\App\Http\Controllers\AssessmentController::class, 'update'])->name('assessments.update');
+    Route::delete('assessments/{assessment}', [\App\Http\Controllers\AssessmentController::class, 'destroy'])->name('assessments.destroy');
 
     // Academic Routes
     // Student Courses
@@ -415,6 +438,16 @@ Route::prefix('student')->group(function () {
     Route::put('students/{student}/health/{health}', [\App\Http\Controllers\StudentHealthController::class, 'update'])->name('students.health.update');
     Route::delete('students/{student}/health/{health}', [\App\Http\Controllers\StudentHealthController::class, 'destroy'])->name('students.health.destroy');
 
+    // Sick Notes
+    Route::get('students/{student}/health/sick-notes', [\App\Http\Controllers\SickNoteController::class, 'index'])->name('students.health.sick-notes.index');
+    Route::get('students/{student}/health/sick-notes/create', [\App\Http\Controllers\SickNoteController::class, 'create'])->name('students.health.sick-notes.create');
+    Route::post('students/{student}/health/sick-notes', [\App\Http\Controllers\SickNoteController::class, 'store'])->name('students.health.sick-notes.store');
+    Route::get('students/{student}/health/sick-notes/{sickNote}', [\App\Http\Controllers\SickNoteController::class, 'show'])->name('students.health.sick-notes.show');
+    Route::get('students/{student}/health/sick-notes/{sickNote}/edit', [\App\Http\Controllers\SickNoteController::class, 'edit'])->name('students.health.sick-notes.edit');
+    Route::put('students/{student}/health/sick-notes/{sickNote}', [\App\Http\Controllers\SickNoteController::class, 'update'])->name('students.health.sick-notes.update');
+    Route::delete('students/{student}/health/sick-notes/{sickNote}', [\App\Http\Controllers\SickNoteController::class, 'destroy'])->name('students.health.sick-notes.destroy');
+    Route::get('students/{student}/health/sick-notes/{sickNote}/download', [\App\Http\Controllers\SickNoteController::class, 'download'])->name('students.health.sick-notes.download');
+
     // Student Disciplinary
     Route::get('students/{student}/disciplinaries', [\App\Http\Controllers\StudentDisciplinaryController::class, 'index'])->name('students.disciplinaries.index');
     Route::get('students/{student}/disciplinaries/create', [\App\Http\Controllers\StudentDisciplinaryController::class, 'create'])->name('students.disciplinaries.create');
@@ -503,3 +536,5 @@ Route::get('students/{student?}/transcript', [StudentTranscriptController::class
 Route::get('students/{student?}/transcript/download', [StudentTranscriptController::class, 'download'])->name('students.transcript.download');
 Route::get('students/{student?}/transcript/simplified', [StudentTranscriptController::class, 'simplified'])->name('students.transcript.simplified');
 Route::get('students/{student?}/transcript/simplified/download', [StudentTranscriptController::class, 'downloadSimplified'])->name('students.transcript.simplified.download');
+
+Route::resource('students.next-of-kin', NextOfKinController::class);

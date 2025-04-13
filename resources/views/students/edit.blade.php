@@ -149,6 +149,17 @@
                 </div>
 
                 <div class="col-12">
+                    <label class="form-label" for="personal_statement">Personal Statement</label>
+                    <textarea class="form-control @error('personal_statement') is-invalid @enderror" 
+                              id="personal_statement" 
+                              name="personal_statement" 
+                              rows="5">{{ old('personal_statement', $student->personal_statement) }}</textarea>
+                    @error('personal_statement')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12">
                     <label class="form-label" for="notes">Notes</label>
                     <textarea class="form-control @error('notes') is-invalid @enderror" 
                               id="notes" 
@@ -163,6 +174,38 @@
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Update Student</button>
                 <a href="{{ route('students.index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Separate form for personal statement -->
+<div class="card mb-3">
+    <div class="card-header">
+        <div class="row flex-between-end">
+            <div class="col-auto align-self-center">
+                <h5 class="mb-0">Update Personal Statement</h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body bg-light">
+        <form action="{{ route('students.personal-statement.update', $student) }}" method="POST">
+            @csrf
+            @method('PATCH')
+            
+            <div class="mb-3">
+                <label class="form-label" for="personal_statement_only">Personal Statement</label>
+                <textarea class="form-control @error('personal_statement') is-invalid @enderror" 
+                          id="personal_statement_only" 
+                          name="personal_statement" 
+                          rows="5">{{ old('personal_statement', $student->personal_statement) }}</textarea>
+                @error('personal_statement')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Update Personal Statement</button>
             </div>
         </form>
     </div>

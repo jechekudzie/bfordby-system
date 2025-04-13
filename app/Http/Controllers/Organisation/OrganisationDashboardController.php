@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Organisation;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin\Organisation;
-use App\Models\Admin\OrganisationType;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-
-
-use Illuminate\Support\Facades\Auth;
+use App\Models\Student;
+use App\Models\Course;
+use App\Models\Assessment;
+use App\Models\Enrollment;
+use App\Models\Module;
+use App\Models\Semester;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrganisationDashboardController extends Controller
 {
-    //
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -24,417 +24,148 @@ class OrganisationDashboardController extends Controller
         return view('organisation.dashboard.dashboard', compact('organisations', 'user' ));
     }
 
-    public function index(Organisation $organisation)
+    
+    public function index()
     {
         $user = Auth::user();
 
-        // Check if the user has a role with the organization
-        $userRole = $user ? $user->getFirstCommonRoleWithOrganization($organisation) : null;
+        // Get current year and term
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        $currentTerm = ceil($currentMonth / 4); // Divides year into 3 terms
 
-        // Get species data
-        $species = \App\Models\Organisation\Species::all();
-
-        // Get hunting data
-        $quotaAllocations = $organisation->quotaAllocations()
-            ->with('species')
-            ->whereYear('start_date', date('Y'))
+        // Get students data
+        $students = Student::query()
+            ->withCount(['enrollments as active_enrollments' => function($query) {
+                $query->where('status', 'active');
+            }])
             ->get();
 
-        $huntingActivities = $organisation->huntingActivities()
-            ->with(['species', 'huntingConcession'])
-            ->whereYear('start_date', date('Y'))
+        // Get courses data
+        $courses = Course::query()
+            ->withCount(['enrollments as active_students' => function($query) {
+                $query->where('status', 'active');
+            }])
+            ->withCount(['modules as total_modules'])
             ->get();
 
-        // Calculate utilized vs allocated quota
-        $quotaUtilization = [];
-        foreach ($species as $s) {
-            $quotaUtilization[$s->id] = [
-                'species' => $s->name,
-                'allocated' => $quotaAllocations->where('species_id', $s->id)->sum('hunting_quota'),
-                'utilized' => 0
-            ];
-        }
+        // Calculate student statistics
+        $studentStats = [
+            'total' => $students->count(),
+            'active' => $students->where('status', 'active')->count(),
+            'new_this_term' => $students->where('created_at', '>=', Carbon::now()->startOfMonth()->subMonths(4))->count(),
+            'graduating_soon' => $students->where('expected_completion_date', '<=', Carbon::now()->addMonths(3))->count()
+        ];
 
-        foreach ($huntingActivities as $activity) {
-            foreach ($activity->species as $s) {
-                if (isset($quotaUtilization[$s->id])) {
-                    $quotaUtilization[$s->id]['utilized'] += $s->pivot->off_take;
-                }
-            }
-        }
+        // Calculate course statistics
+        $courseStats = [
+            'total_courses' => $courses->count(),
+            'total_modules' => $courses->sum('total_modules'),
+            'avg_students_per_course' => $courses->avg('active_students') ?? 0,
+            'most_popular_course' => $courses->sortByDesc('active_students')->first()
+        ];
 
-        // Get wildlife conflicts data
-        $wildlifeConflicts = \App\Models\Organisation\WildlifeConflictIncident::where('organisation_id', $organisation->id)
-            ->with(['species', 'conflictType'])
-            ->whereYear('incident_date', date('Y'))
-            ->get();
-
-        // Group conflicts by type
-        $conflictsByType = $wildlifeConflicts->groupBy('conflictType.name');
-        $conflictTypesData = [];
-        foreach ($conflictsByType as $type => $conflicts) {
-            $conflictTypesData[] = [
-                'type' => $type ?: 'Unspecified',
-                'count' => $conflicts->count()
-            ];
-        }
-
-        // Group conflicts by species
-        $conflictsBySpecies = [];
-        foreach ($wildlifeConflicts as $conflict) {
-            foreach ($conflict->species as $s) {
-                if (!isset($conflictsBySpecies[$s->id])) {
-                    $conflictsBySpecies[$s->id] = [
-                        'species' => $s->name,
-                        'count' => 0
-                    ];
-                }
-                $conflictsBySpecies[$s->id]['count']++;
-            }
-        }
-
-        // Get problem animal control data
-        $problemAnimalControls = \App\Models\Organisation\ProblemAnimalControl::where('organisation_id', $organisation->id)
-            ->with('wildlifeConflictIncident.species')
-            ->whereYear('control_date', date('Y'))
-            ->get();
-
-        // Group PAC by species
-        $pacBySpecies = [];
-        foreach ($problemAnimalControls as $pac) {
-            if ($pac->wildlifeConflictIncident) {
-                foreach ($pac->wildlifeConflictIncident->species as $s) {
-                    if (!isset($pacBySpecies[$s->id])) {
-                        $pacBySpecies[$s->id] = [
-                            'species' => $s->name,
-                            'count' => 0
-                        ];
-                    }
-                    $pacBySpecies[$s->id]['count']++;
-                }
-            }
-        }
-
-        // Get poaching incident data
-        $poachingIncidents = \App\Models\Organisation\PoachingIncident::where('organisation_id', $organisation->id)
-            ->with(['species', 'poachers'])
-            ->whereYear('date', date('Y'))
-            ->get();
-
-        // Group poaching by species
-        $poachingBySpecies = [];
-        foreach ($poachingIncidents as $incident) {
-            foreach ($incident->species as $s) {
-                if (!isset($poachingBySpecies[$s->id])) {
-                    $poachingBySpecies[$s->id] = [
-                        'species' => $s->name,
-                        'count' => 0,
-                        'estimatedAnimals' => 0
-                    ];
-                }
-                $poachingBySpecies[$s->id]['count']++;
-                $poachingBySpecies[$s->id]['estimatedAnimals'] += $s->pivot->estimate_number;
-            }
-        }
-
-        // Calculate monthly statistics for current year
-        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        $monthlyHuntingData = array_fill_keys($months, 0);
-        $monthlyConflictData = array_fill_keys($months, 0);
-        $monthlyPoachingData = array_fill_keys($months, 0);
-
-        foreach ($huntingActivities as $activity) {
-            $month = date('M', strtotime($activity->start_date));
-            $monthlyHuntingData[$month]++;
-        }
-
-        foreach ($wildlifeConflicts as $conflict) {
-            $month = date('M', strtotime($conflict->incident_date));
-            $monthlyConflictData[$month]++;
-        }
-
-        foreach ($poachingIncidents as $incident) {
-            $month = date('M', strtotime($incident->date));
-            $monthlyPoachingData[$month]++;
-        }
-
-        // Get hunting concessions
-        $huntingConcessions = $organisation->huntingConcessions()->get();
-
-        // Recent activities (combined and sorted)
+        // Get recent activities
         $recentActivities = collect();
 
-        foreach ($huntingActivities->take(5) as $activity) {
+        // Recent enrollments
+        $recentEnrollments = Enrollment::query()
+            ->with(['student', 'course'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        foreach ($recentEnrollments as $enrollment) {
             $recentActivities->push([
-                'type' => 'Hunting Activity',
-                'title' => 'Safari at ' . ($activity->huntingConcession->name ?? 'Unknown Concession'),
-                'date' => $activity->start_date,
-                'details' => $activity->species->count() . ' species, ' . $activity->species->sum('pivot.off_take') . ' animals'
+                'type' => 'Enrollment',
+                'title' => 'New Student Enrollment',
+                'date' => $enrollment->created_at,
+                'details' => $enrollment->student->name . ' enrolled in ' . $enrollment->course->name
             ]);
         }
 
-        foreach ($wildlifeConflicts->take(5) as $conflict) {
+        // Recent assessments
+        $recentAssessments = Assessment::query()
+            ->with(['allocations.submissions.student'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        foreach ($recentAssessments as $assessment) {
             $recentActivities->push([
-                'type' => 'Wildlife Conflict',
-                'title' => $conflict->title,
-                'date' => $conflict->incident_date,
-                'details' => ($conflict->conflictType->name ?? 'Unspecified type') . ', ' .
-                             $conflict->species->pluck('name')->implode(', ')
+                'type' => 'Assessment',
+                'title' => 'Assessment Submitted',
+                'date' => $assessment->submitted_at,
+                'details' => $assessment->allocations->flatMap->submissions->first()->student->name . ' - ' . $assessment->module->name
             ]);
         }
 
-        foreach ($poachingIncidents->take(5) as $incident) {
-            $recentActivities->push([
-                'type' => 'Poaching Incident',
-                'title' => $incident->title,
-                'date' => $incident->date,
-                'details' => $incident->poachers->count() . ' poachers, ' .
-                             $incident->species->pluck('name')->implode(', ')
-            ]);
-        }
-
+        // Sort activities by date
         $recentActivities = $recentActivities->sortByDesc('date')->take(10);
 
-        return view('organisation.dashboard.show', compact(
-            'organisation',
-            'user',
-            'userRole',
-            'species',
-            'quotaAllocations',
-            'huntingActivities',
-            'quotaUtilization',
-            'wildlifeConflicts',
-            'conflictTypesData',
-            'conflictsBySpecies',
-            'problemAnimalControls',
-            'pacBySpecies',
-            'poachingIncidents',
-            'poachingBySpecies',
-            'months',
-            'monthlyHuntingData',
-            'monthlyConflictData',
-            'monthlyPoachingData',
-            'huntingConcessions',
-            'recentActivities'
-        ));
-    }
+        // Calculate monthly statistics
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $monthlyStats = [
+            'enrollments' => array_fill_keys($months, 0),
+            'assessments' => array_fill_keys($months, 0),
+            'completions' => array_fill_keys($months, 0)
+        ];
 
-    public function checkDashboardAccess(Organisation $organisation)
-    {
-        $user = Auth::user();
-
-        $organisationType = OrganisationType::where('name', 'like', '%Rural District Council%')->first();
-        $ruralDistrictCouncils = Organisation::where('organisation_type_id', $organisationType->id)->get();
-
-        if ($user->hasPermissionTo('view-generic')) {
-            return view('organisation.dashboard.organisations', compact('organisation', 'user', 'ruralDistrictCouncils'));
-        } else {
-            return view('organisation.dashboard.index', compact('organisation', 'user'));
+        // Populate monthly statistics
+        foreach ($recentEnrollments as $enrollment) {
+            $month = date('M', strtotime($enrollment->created_at));
+            $monthlyStats['enrollments'][$month]++;
         }
-    }
 
-    //ruralDistrictCouncils
-    public function ruralDistrictCouncils()
-    {
-        $organisationType = OrganisationType::where('name', 'like', '%Rural District Council%')->first();
-        $ruralDistrictCouncils = Organisation::where('organisation_type_id', $organisationType->id)->get();
-        return view('organisation.dashboard.rural-district-councils', compact('ruralDistrictCouncils'));
+        foreach ($recentAssessments as $assessment) {
+            $month = date('M', strtotime($assessment->submitted_at));
+            $monthlyStats['assessments'][$month]++;
+        }
+
+        // Get assessment statistics
+        $assessmentStats = Assessment::whereHas('allocations.submissions', function($query) {
+            $query->whereNotNull('grade');
+        })
+        ->with(['allocations.submissions.student', 'module'])
+        ->get()
+        ->map(function($assessment) {
+            $submissions = $assessment->allocations->flatMap->submissions;
+            return [
+                'name' => $assessment->name,
+                'type' => $assessment->type,
+                'module' => $assessment->module->name,
+                'total_students' => $submissions->pluck('student_id')->unique()->count(),
+                'average_grade' => $submissions->avg('grade') ?? 0,
+                'passing_rate' => $this->calculatePassingRate($assessment)
+            ];
+        });
+
+        return view('organisation.dashboard.index', compact(
+            'user',
+            'currentYear',
+            'currentTerm',
+            'studentStats',
+            'courseStats',
+            'courses',
+            'recentActivities',
+            'monthlyStats',
+            'months',
+            'assessmentStats'
+        ));
     }
 
     /**
-     * Display the historical dashboard with data from 2019-2023.
+     * Calculate the passing rate for an assessment
      */
-    public function historicalDashboard(Organisation $organisation)
+    private function calculatePassingRate($assessment)
     {
-        $user = Auth::user();
+        $submissions = $assessment->allocations->flatMap->submissions;
+        if ($submissions->isEmpty()) return 0;
 
-        // Check if the user has a role with the organization
-        $userRole = $user ? $user->getFirstCommonRoleWithOrganization($organisation) : null;
+        $passingCount = $submissions->filter(function($submission) {
+            return $submission->grade >= 50; // Assuming 50 is the passing grade
+        })->count();
 
-        // Get species data
-        $species = \App\Models\Organisation\Species::all();
-
-        // Get years for historical data
-        $years = [2019, 2020, 2021, 2022, 2023];
-        $currentYear = date('Y');
-
-        // Get hunting records data
-        $huntingRecords = \App\Models\HistoricalData\HuntingRecord::where('organisation_id', $organisation->id)
-            ->with('species')
-            ->whereIn('period', $years)
-            ->get();
-
-        // Calculate allocated vs utilized quota by year
-        $yearlyQuotaData = [];
-        foreach ($years as $year) {
-            $yearlyQuotaData[$year] = [
-                'allocated' => $huntingRecords->where('period', $year)->sum('allocated'),
-                'utilised' => $huntingRecords->where('period', $year)->sum('utilised')
-            ];
-        }
-
-        // Get top species for hunting
-        $topHuntingSpecies = $huntingRecords->groupBy('species_id')
-            ->map(function ($records, $speciesId) {
-                $species = $records->first()->species;
-                return [
-                    'species' => $species->name,
-                    'allocated' => $records->sum('allocated'),
-                    'utilised' => $records->sum('utilised')
-                ];
-            })
-            ->sortByDesc('utilised')
-            ->take(5)
-            ->values()
-            ->toArray();
-
-        // Get conflict records data
-        $conflictRecords = \App\Models\HistoricalData\ConflictRecord::where('organisation_id', $organisation->id)
-            ->with('species')
-            ->whereIn('period', $years)
-            ->get();
-
-        // Calculate conflict data by year
-        $yearlyConflictData = [];
-        foreach ($years as $year) {
-            $yearRecords = $conflictRecords->where('period', $year);
-            $yearlyConflictData[$year] = [
-                'crop_damage' => $yearRecords->sum('crop_damage_cases'),
-                'human_injured' => $yearRecords->sum('human_injured'),
-                'human_death' => $yearRecords->sum('human_death'),
-                'livestock_killed_injured' => $yearRecords->sum('livestock_killed_injured'),
-                'infrastructure_destroyed' => $yearRecords->sum('infrastructure_destroyed')
-            ];
-        }
-
-        // Get top species for conflicts
-        $topConflictSpecies = $conflictRecords->groupBy('species_id')
-            ->map(function ($records, $speciesId) {
-                $species = $records->first()->species;
-                return [
-                    'species' => $species->name,
-                    'crop_damage' => $records->sum('crop_damage_cases'),
-                    'human_impact' => $records->sum('human_injured') + $records->sum('human_death'),
-                    'livestock_impact' => $records->sum('livestock_killed_injured')
-                ];
-            })
-            ->sortByDesc(function ($data) {
-                return $data['crop_damage'] + $data['human_impact'] + $data['livestock_impact'];
-            })
-            ->take(5)
-            ->values()
-            ->toArray();
-
-        // Get animal control records
-        $animalControlRecords = \App\Models\HistoricalData\AnimalControlRecord::where('organisation_id', $organisation->id)
-            ->with('species')
-            ->whereIn('period', $years)
-            ->get();
-
-        // Calculate animal control data by year
-        $yearlyControlData = [];
-        foreach ($years as $year) {
-            $yearlyControlData[$year] = $animalControlRecords->where('period', $year)->sum('total');
-        }
-
-        // Top control species
-        $topControlSpecies = $animalControlRecords->groupBy('species_id')
-            ->map(function ($records, $speciesId) {
-                $species = $records->first()->species;
-                return [
-                    'species' => $species->name,
-                    'total' => $records->sum('total')
-                ];
-            })
-            ->sortByDesc('total')
-            ->take(5)
-            ->values()
-            ->toArray();
-
-        // Get poaching data
-        $poachingRecords = \App\Models\HistoricalData\PoachingRecord::where('organisation_id', $organisation->id)
-            ->with(['species', 'poachingMethod'])
-            ->whereIn('period', $years)
-            ->get();
-
-        // Calculate poaching data by year
-        $yearlyPoachingData = [];
-        foreach ($years as $year) {
-            $yearlyPoachingData[$year] = $poachingRecords->where('period', $year)->sum('number');
-        }
-
-        // Top poached species
-        $topPoachingSpecies = $poachingRecords->groupBy('species_id')
-            ->map(function ($records, $speciesId) {
-                $species = $records->first()->species;
-                return [
-                    'species' => $species->name,
-                    'number' => $records->sum('number')
-                ];
-            })
-            ->sortByDesc('number')
-            ->take(5)
-            ->values()
-            ->toArray();
-
-        // Get income data
-        $incomeRecords = \App\Models\HistoricalData\IncomeRecord::where('organisation_id', $organisation->id)
-            ->whereIn('period', $years)
-            ->get();
-
-        // Get income by year
-        $yearlyIncomeData = [];
-        foreach ($years as $year) {
-            $yearRecords = $incomeRecords->where('period', $year)->first();
-            $yearlyIncomeData[$year] = [
-                'rdc_share' => $yearRecords ? $yearRecords->rdc_share : 0,
-                'community_share' => $yearRecords ? $yearRecords->community_share : 0,
-                'ca_share' => $yearRecords ? $yearRecords->ca_share : 0,
-                'total' => $yearRecords ? $yearRecords->rdc_share + $yearRecords->community_share + $yearRecords->ca_share : 0
-            ];
-        }
-
-        // Get income sources
-        $incomeSourceRecords = \App\Models\HistoricalData\SourceOfIncomeRecord::where('organisation_id', $organisation->id)
-            ->whereIn('period', $years)
-            ->get();
-
-        // Calculate income sources data
-        $incomeSourcesData = [
-            'safari_hunting' => $incomeSourceRecords->sum('safari_hunting'),
-            'tourism' => $incomeSourceRecords->sum('tourism'),
-            'fishing' => $incomeSourceRecords->sum('fishing'),
-            'problem_animal_control' => $incomeSourceRecords->sum('problem_animal_control'),
-            'carbon_credits' => $incomeSourceRecords->sum('carbon_credits'),
-            'other' => $incomeSourceRecords->sum('ivory_sales') +
-                        $incomeSourceRecords->sum('hide_sales') +
-                        $incomeSourceRecords->sum('meat_sales') +
-                        $incomeSourceRecords->sum('donations_grants') +
-                        $incomeSourceRecords->sum('miscellaneous')
-        ];
-
-        return view('organisation.dashboard.historical', compact(
-            'organisation',
-            'user',
-            'userRole',
-            'years',
-            'currentYear',
-            'species',
-            'yearlyQuotaData',
-            'topHuntingSpecies',
-            'yearlyConflictData',
-            'topConflictSpecies',
-            'yearlyControlData',
-            'topControlSpecies',
-            'yearlyPoachingData',
-            'topPoachingSpecies',
-            'yearlyIncomeData',
-            'incomeSourcesData'
-        ));
-    }
-
-    public function testChart(Organisation $organisation)
-    {
-        return view('organisation.dashboard.test-single-chart', compact('organisation'));
+        return ($passingCount / $submissions->count()) * 100;
     }
 }
