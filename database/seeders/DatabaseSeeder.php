@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             StudyModesSeeder::class,
             StudentSeeder::class,
             EnrollmentCodeSeeder::class,
+           
         ]);
 
         // Seed assessment structures and test data
@@ -37,5 +38,16 @@ class DatabaseSeeder extends Seeder
             GradeAllSubmissionsSeeder::class,
             ModuleContentSeeder::class,
         ]);
+
+
+        // Seed the organisation types
+        $this->call([
+            OrganisationTypesSeeder::class,
+            OrganisationTypeRelationshipSeeder::class,
+            OrganisationsSeeder::class,
+            UsersTableSeeder::class,
+            PermissionModuleSeeder::class,
+        ]);
+            
     }
 }

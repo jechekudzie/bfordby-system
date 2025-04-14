@@ -185,6 +185,67 @@
                         @enderror
                     </div>
 
+                    <!-- Subjects and Grades -->
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="fas fa-book-open text-primary me-1"></i> Subjects and Grades
+                        </label>
+                        <div id="subjects-grades-container">
+                            @if(is_array($academicHistory->subjects_grades) && count($academicHistory->subjects_grades) > 0)
+                                @foreach($academicHistory->subjects_grades as $index => $pair)
+                                <div class="subjects-grades-pair mb-2">
+                                    <div class="row g-2">
+                                        <div class="col-md-5">
+                                            <input type="text" 
+                                                name="subjects_grades[{{ $index }}][subject]" 
+                                                class="form-control"
+                                                placeholder="Enter subject name"
+                                                value="{{ $pair['subject'] ?? '' }}">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" 
+                                                name="subjects_grades[{{ $index }}][grade]" 
+                                                class="form-control"
+                                                placeholder="Enter grade"
+                                                value="{{ $pair['grade'] ?? '' }}">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-danger remove-pair" {{ count($academicHistory->subjects_grades) <= 1 ? 'style="display: none;"' : '' }}>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="subjects-grades-pair mb-2">
+                                    <div class="row g-2">
+                                        <div class="col-md-5">
+                                            <input type="text" 
+                                                name="subjects_grades[0][subject]" 
+                                                class="form-control"
+                                                placeholder="Enter subject name">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" 
+                                                name="subjects_grades[0][grade]" 
+                                                class="form-control"
+                                                placeholder="Enter grade">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-danger remove-pair" style="display: none;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        <button type="button" class="btn btn-success mt-2" id="add-subject-grade">
+                            <i class="fas fa-plus me-1"></i> Add Subject-Grade Pair
+                        </button>
+                    </div>
+
                     <!-- Notes -->
                     <div class="col-12">
                         <label class="form-label">
@@ -226,6 +287,117 @@ document.addEventListener('DOMContentLoaded', function() {
         format: 'YYYY-MM-DD',
         useCurrent: false
     });
+});
+</script>
+
+<!-- Direct script tag for subject-grade functionality -->
+<script>
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables - check for existing subjects_grades
+    var subjectsGradesData = @json($academicHistory->subjects_grades ?: []);
+    var pairCount = Array.isArray(subjectsGradesData) && subjectsGradesData.length > 0 ? subjectsGradesData.length : 1;
+    
+    console.log('Initial subjects and grades data:', subjectsGradesData);
+    console.log('Initial pair count:', pairCount);
+    
+    // Get elements
+    const addButton = document.getElementById('add-subject-grade');
+    const container = document.getElementById('subjects-grades-container');
+    
+    console.log('Add Button:', addButton);
+    console.log('Container:', container);
+    
+    // Add button click handler
+    if (addButton) {
+        addButton.onclick = function() {
+            console.log('Add button clicked');
+            
+            // Create new element
+            const newPair = document.createElement('div');
+            newPair.className = 'subjects-grades-pair mb-2';
+            newPair.innerHTML = `
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <input type="text" 
+                               name="subjects_grades[${pairCount}][subject]" 
+                               class="form-control"
+                               placeholder="Enter subject name">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" 
+                               name="subjects_grades[${pairCount}][grade]" 
+                               class="form-control"
+                               placeholder="Enter grade">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-pair">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add to container
+            container.appendChild(newPair);
+            
+            // Increment counter
+            pairCount++;
+            console.log('Added new pair, total pairs:', pairCount);
+            
+            // Show all remove buttons
+            const removeButtons = document.querySelectorAll('.remove-pair');
+            removeButtons.forEach(function(btn) {
+                btn.style.display = 'block';
+            });
+        };
+    }
+    
+    // Add a test button
+    const testButton = document.createElement('button');
+    testButton.type = 'button';
+    testButton.className = 'btn btn-info mt-2 ms-2';
+    testButton.textContent = 'Test JS';
+    testButton.onclick = function() {
+        alert('JavaScript is working! Pair count is ' + pairCount);
+    };
+    
+    // Add the test button after the add button
+    if (addButton && addButton.parentNode) {
+        addButton.parentNode.insertBefore(testButton, addButton.nextSibling);
+    }
+    
+    // Remove button handler using event delegation
+    if (container) {
+        container.addEventListener('click', function(event) {
+            // Find clicked remove button
+            const target = event.target.closest('.remove-pair');
+            
+            if (target) {
+                console.log('Remove button clicked');
+                
+                // Find the pair element
+                const pair = target.closest('.subjects-grades-pair');
+                
+                if (pair) {
+                    // Remove the pair
+                    pair.remove();
+                    
+                    // Decrement counter
+                    pairCount--;
+                    console.log('Removed pair, remaining pairs:', pairCount);
+                    
+                    // Hide remove buttons if only one pair remains
+                    if (pairCount === 1) {
+                        const removeButtons = document.querySelectorAll('.remove-pair');
+                        removeButtons.forEach(function(btn) {
+                            btn.style.display = 'none';
+                        });
+                    }
+                }
+            }
+        });
+    }
 });
 </script>
 @endpush

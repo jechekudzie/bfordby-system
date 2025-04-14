@@ -24,6 +24,7 @@ class AcademicHistory extends Model
         'certificate_number',
         'certificate_path',
         'transcript_path',
+        'subjects_grades',
         'status',
         'notes',
         'slug'
@@ -32,6 +33,12 @@ class AcademicHistory extends Model
     protected $dates = [
         'start_date',
         'completion_date'
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'completion_date' => 'date',
+        'subjects_grades' => 'array',
     ];
    
 

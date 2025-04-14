@@ -160,6 +160,39 @@
                         @enderror
                     </div>
 
+                    <!-- Subjects and Grades -->
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="fas fa-book-open text-primary me-1"></i> Subjects and Grades
+                        </label>
+                        <div id="subjects-grades-container">
+                            <div class="subjects-grades-pair mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <input type="text" 
+                                               name="subjects_grades[0][subject]" 
+                                               class="form-control"
+                                               placeholder="Enter subject name">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" 
+                                               name="subjects_grades[0][grade]" 
+                                               class="form-control"
+                                               placeholder="Enter grade">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger remove-pair" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success mt-2" id="add-subject-grade">
+                            <i class="fas fa-plus me-1"></i> Add Subject-Grade Pair
+                        </button>
+                    </div>
+
                     <!-- Notes -->
                     <div class="col-12">
                         <label class="form-label">
@@ -197,13 +230,178 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
     // Initialize datetimepicker
     $('.datetimepicker').datetimepicker({
         format: 'YYYY-MM-DD',
         useCurrent: false
     });
+
+    // Simple counter for subject-grade pairs
+    var pairCount = 1;
+    
+    // Add button click handler
+    $('#add-subject-grade').on('click', function() {
+        // Create new pair HTML
+        var newPair = '<div class="subjects-grades-pair mb-2">' +
+            '<div class="row g-2">' +
+                '<div class="col-md-5">' +
+                    '<input type="text" name="subjects_grades[' + pairCount + '][subject]" class="form-control" placeholder="Enter subject name">' +
+                '</div>' +
+                '<div class="col-md-5">' +
+                    '<input type="text" name="subjects_grades[' + pairCount + '][grade]" class="form-control" placeholder="Enter grade">' +
+                '</div>' +
+                '<div class="col-md-2">' +
+                    '<button type="button" class="btn btn-danger remove-pair"><i class="fas fa-trash"></i></button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+        
+        // Append to container
+        $('#subjects-grades-container').append(newPair);
+        
+        // Increment counter
+        pairCount++;
+        
+        // Show all remove buttons if more than one pair
+        if (pairCount > 1) {
+            $('.remove-pair').show();
+        }
+    });
+    
+    // Remove button click handler using event delegation
+    $(document).on('click', '.remove-pair', function() {
+        // Remove the pair
+        $(this).closest('.subjects-grades-pair').remove();
+        
+        // Decrement counter
+        pairCount--;
+        
+        // Hide remove buttons if only one pair remains
+        if (pairCount === 1) {
+            $('.remove-pair').hide();
+        }
+    });
+    
+    // Add a direct test button
+    $('<button type="button" class="btn btn-info mt-2 ms-2">Test jQuery</button>').insertAfter('#add-subject-grade').on('click', function() {
+        alert('jQuery is working!');
+    });
 });
 </script>
 @endpush
+
+<!-- Direct script tag for subject-grade functionality -->
+<script>
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables
+    let pairCount = 1;
+    
+    // Get elements
+    const addButton = document.getElementById('add-subject-grade');
+    const container = document.getElementById('subjects-grades-container');
+    
+    // Add button click handler
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            // Create new element
+            const newPair = document.createElement('div');
+            newPair.className = 'subjects-grades-pair mb-2';
+            newPair.innerHTML = `
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <input type="text" 
+                               name="subjects_grades[${pairCount}][subject]" 
+                               class="form-control"
+                               placeholder="Enter subject name">
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" 
+                               name="subjects_grades[${pairCount}][grade]" 
+                               class="form-control"
+                               placeholder="Enter grade">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-pair">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add to container
+            container.appendChild(newPair);
+            
+            // Increment counter
+            pairCount++;
+            
+            // Show all remove buttons
+            const removeButtons = document.querySelectorAll('.remove-pair');
+            removeButtons.forEach(function(btn) {
+                btn.style.display = 'block';
+            });
+        });
+    }
+    
+    // Remove button handler using event delegation
+    if (container) {
+        container.addEventListener('click', function(event) {
+            // Find clicked remove button
+            let target = event.target;
+            
+            // Check if clicked element or parent is a remove button
+            while (target != this) {
+                if (target.classList && target.classList.contains('remove-pair')) {
+                    // Found the remove button
+                    
+                    // Find and remove parent pair
+                    let pair = target;
+                    while (pair && !pair.classList.contains('subjects-grades-pair')) {
+                        pair = pair.parentNode;
+                    }
+                    
+                    if (pair) {
+                        // Remove the pair
+                        pair.remove();
+                        
+                        // Decrement counter
+                        pairCount--;
+                        
+                        // Hide remove buttons if only one pair remains
+                        if (pairCount === 1) {
+                            const removeButtons = document.querySelectorAll('.remove-pair');
+                            removeButtons.forEach(function(btn) {
+                                btn.style.display = 'none';
+                            });
+                        }
+                    }
+                    
+                    // Prevent further event handling
+                    event.stopPropagation();
+                    return;
+                }
+                
+                // Move up the DOM
+                target = target.parentNode;
+                if (!target) break;
+            }
+        });
+    }
+    
+    // Add test button
+    const testButton = document.createElement('button');
+    testButton.type = 'button';
+    testButton.className = 'btn btn-info mt-2 ms-2';
+    testButton.textContent = 'Test JS';
+    testButton.onclick = function() {
+        alert('Pure JavaScript is working!');
+    };
+    
+    // Add test button after the add button
+    if (addButton && addButton.parentNode) {
+        addButton.parentNode.insertBefore(testButton, addButton.nextSibling);
+    }
+});
+</script>
 @endsection 

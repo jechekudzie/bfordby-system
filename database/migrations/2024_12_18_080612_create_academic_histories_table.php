@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('transcript_path')->nullable();
             $table->enum('status', ['completed', 'in_progress', 'incomplete', 'verified'])->default('completed');
             $table->text('notes')->nullable();
+            $table->json('subjects_grades')->nullable();
             $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes();

@@ -1261,6 +1261,27 @@
                                                                                 <i class="fas fa-file-alt me-1"></i>View Transcript
                                                                             </a>
                                                                         @endif
+                                                                        @if(is_array($history->subjects_grades) && count($history->subjects_grades) > 0)
+                                                                            <button type="button" 
+                                                                                   class="btn btn-sm btn-outline-success"
+                                                                                   data-bs-toggle="modal"
+                                                                                   data-bs-target="#subjectsModal{{ $history->id }}">
+                                                                                <i class="fas fa-book-open me-1"></i>View Subjects
+                                                                            </button>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @elseif(is_array($history->subjects_grades) && count($history->subjects_grades) > 0)
+                                                            <div class="col-12">
+                                                                <div class="border-top pt-3">
+                                                                    <div class="d-flex gap-2">
+                                                                        <button type="button" 
+                                                                               class="btn btn-sm btn-outline-success"
+                                                                               data-bs-toggle="modal"
+                                                                               data-bs-target="#subjectsModal{{ $history->id }}">
+                                                                            <i class="fas fa-book-open me-1"></i>View Subjects
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1280,6 +1301,55 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Subject-Grades Modal -->
+                                        @if(is_array($history->subjects_grades) && count($history->subjects_grades) > 0)
+                                        <div class="modal fade" id="subjectsModal{{ $history->id }}" tabindex="-1" aria-labelledby="subjectsModalLabel{{ $history->id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-light">
+                                                        <h5 class="modal-title" id="subjectsModalLabel{{ $history->id }}">
+                                                            <i class="fas fa-book-open text-success me-2"></i>Subjects & Grades
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <h6 class="text-primary mb-3">{{ $history->institution_name }}</h6>
+                                                            <p class="text-muted small mb-1">{{ $history->program_name }} - {{ $history->qualificationLevel->name }}</p>
+                                                            <p class="text-muted small">{{ date('M d, Y', strtotime($history->start_date)) }} - {{ date('M d, Y', strtotime($history->completion_date)) }}</p>
+                                                        </div>
+                                                        
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered table-hover">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th width="60%">Subject</th>
+                                                                        <th width="40%">Grade</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach($history->subjects_grades as $subjectGrade)
+                                                                    <tr>
+                                                                        <td>{{ $subjectGrade['subject'] }}</td>
+                                                                        <td>
+                                                                            <span class="badge bg-light text-dark border px-3 py-2">
+                                                                                {{ $subjectGrade['grade'] }}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
                                     @endforeach
                                 @endforeach
                             </div>

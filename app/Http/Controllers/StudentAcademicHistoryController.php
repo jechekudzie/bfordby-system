@@ -7,6 +7,7 @@ use App\Models\AcademicHistory;
 use App\Models\QualificationLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class StudentAcademicHistoryController extends Controller
 {
@@ -18,6 +19,8 @@ class StudentAcademicHistoryController extends Controller
 
     public function store(Request $request, Student $student)
     {
+        Log::info('Academic History Store Request:', ['request' => $request->all()]);
+        
         $validated = $request->validate([
             'institution_name' => 'required|string|max:255',
             'qualification_level_id' => 'required|exists:qualification_levels,id',
@@ -29,7 +32,10 @@ class StudentAcademicHistoryController extends Controller
             'certificate_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'transcript_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'status' => 'required|in:completed,in_progress,incomplete,verified',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'subjects_grades' => 'nullable|array',
+            'subjects_grades.*.subject' => 'required_with:subjects_grades|string|max:255',
+            'subjects_grades.*.grade' => 'required_with:subjects_grades|string|max:255'
         ]);
 
         // Handle certificate upload
@@ -44,7 +50,20 @@ class StudentAcademicHistoryController extends Controller
                 ->store('transcripts', 'public');
         }
 
-        $student->academicHistories()->create($validated);
+        // Process subjects_grades array
+        if ($request->has('subjects_grades')) {
+            $subjectsGrades = array_values(array_filter($request->subjects_grades, function($pair) {
+                return !empty($pair['subject']) && !empty($pair['grade']);
+            }));
+            
+            Log::info('Subjects and Grades before saving:', ['subjects_grades' => $subjectsGrades]);
+            
+            // Make sure it's explicitly set as a separate step
+            $validated['subjects_grades'] = $subjectsGrades;
+        }
+
+        $academicHistory = $student->academicHistories()->create($validated);
+        Log::info('Academic History Created:', ['id' => $academicHistory->id, 'data' => $academicHistory->toArray()]);
 
         return redirect()
             ->route('students.show', $student)
@@ -59,6 +78,11 @@ class StudentAcademicHistoryController extends Controller
 
     public function update(Request $request, Student $student, AcademicHistory $academicHistory)
     {
+        Log::info('Academic History Update Request:', [
+            'academic_history_id' => $academicHistory->id,
+            'request' => $request->all()
+        ]);
+        
         $validated = $request->validate([
             'institution_name' => 'required|string|max:255',
             'qualification_level_id' => 'required|exists:qualification_levels,id',
@@ -70,7 +94,10 @@ class StudentAcademicHistoryController extends Controller
             'certificate_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'transcript_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'status' => 'required|in:completed,in_progress,incomplete,verified',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'subjects_grades' => 'nullable|array',
+            'subjects_grades.*.subject' => 'required_with:subjects_grades|string|max:255',
+            'subjects_grades.*.grade' => 'required_with:subjects_grades|string|max:255'
         ]);
 
         // Handle certificate upload
@@ -93,7 +120,36 @@ class StudentAcademicHistoryController extends Controller
                 ->store('transcripts', 'public');
         }
 
+        // Process subjects_grades array
+        if ($request->has('subjects_grades')) {
+            $subjectsGrades = array_values(array_filter($request->subjects_grades, function($pair) {
+                return !empty($pair['subject']) && !empty($pair['grade']);
+            }));
+            
+            Log::info('Subjects and Grades before updating:', [
+                'academic_history_id' => $academicHistory->id, 
+                'subjects_grades' => $subjectsGrades
+            ]);
+            
+            // Make sure it's explicitly set as a separate step
+            $validated['subjects_grades'] = $subjectsGrades;
+        } else {
+            // Set to empty array if not provided
+            $validated['subjects_grades'] = [];
+            Log::info('No subjects_grades in request, setting to empty array');
+        }
+
+        // Update the academic history
         $academicHistory->update($validated);
+        
+        // Reload the model to verify the data was saved
+        $academicHistory->refresh();
+        
+        Log::info('Academic History Updated:', [
+            'id' => $academicHistory->id, 
+            'data' => $academicHistory->toArray(),
+            'subjects_grades' => $academicHistory->subjects_grades
+        ]);
 
         return redirect()
             ->route('students.show', $student)
