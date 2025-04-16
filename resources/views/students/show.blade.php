@@ -65,17 +65,38 @@
         border: 2px solid white;
     }
 
-    .nav-pills .nav-link.active {
-        background-color: #065d40;
-        color: white !important;
+    /* New tab styles */
+    .nav-tabs-container {
+        border-bottom: 1px solid #e9ecef;
     }
-
-    .nav-pills .nav-link {
+    
+    .tab-link {
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        position: relative;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    
+    .tab-link:hover {
         color: #065d40;
+        background-color: rgba(6, 93, 64, 0.05);
     }
-
-    .nav-pills .nav-link:hover:not(.active) {
-        color: #043927;
+    
+    .tab-link.active {
+        color: #065d40;
+        font-weight: 600;
+    }
+    
+    .tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: #065d40;
     }
 
     .custom-table th {
@@ -249,34 +270,24 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <ul class="nav nav-pills card-header-pills" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#personal" role="tab">Personal Info</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#documents" role="tab">Identification</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#health" role="tab">Health Record</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#academic" role="tab">Academic History</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#disciplinary" role="tab">Disciplinary Record</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#courses" role="tab">Courses</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#attendance" role="tab">Attendance</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#payments" role="tab">Payments</a>
-            </li>
-
-        </ul>
+    <div class="card-header bg-white p-0 border-0">
+        <div class="d-flex nav-tabs-container overflow-auto">
+            <a class="tab-link active py-3 px-4" data-bs-toggle="tab" href="#personal">
+                <i class="fas fa-user-circle me-2"></i>Personal Info
+            </a>
+            <a class="tab-link py-3 px-4" data-bs-toggle="tab" href="#academic">
+                <i class="fas fa-graduation-cap me-2"></i>Academic History
+            </a>
+            <a class="tab-link py-3 px-4" data-bs-toggle="tab" href="#disciplinary">
+                <i class="fas fa-gavel me-2"></i>Disciplinary Record
+            </a>
+            <a class="tab-link py-3 px-4" data-bs-toggle="tab" href="#courses">
+                <i class="fas fa-book me-2"></i>Courses
+            </a>
+            <a class="tab-link py-3 px-4" data-bs-toggle="tab" href="#payments">
+                <i class="fas fa-money-bill-wave me-2"></i>Payments
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <div class="tab-content">
@@ -354,6 +365,147 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Identification Cards -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-id-card text-primary me-2"></i>Identification Documents
+                        </h6>
+                        <a href="{{ route('students.identifications.create', $student) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Identification
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if($student->identifications->count() > 0)
+                            <div class="row g-4">
+                                @foreach($student->identifications->sortByDesc('issue_date')->chunk(2) as $chunk)
+                                    @foreach($chunk as $identification)
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            @switch(strtolower($identification->type))
+                                                                @case('passport')
+                                                                    <i class="fas fa-passport text-primary fs-5"></i>
+                                                                    @break
+                                                                @case('national id')
+                                                                    <i class="fas fa-id-card text-info fs-5"></i>
+                                                                    @break
+                                                                @case('driver license')
+                                                                    <i class="fas fa-id-card-alt text-success fs-5"></i>
+                                                                    @break
+                                                                @case('birth certificate')
+                                                                    <i class="fas fa-certificate text-warning fs-5"></i>
+                                                                    @break
+                                                                @case('student id')
+                                                                    <i class="fas fa-user-graduate text-danger fs-5"></i>
+                                                                    @break
+                                                                @default
+                                                                    <i class="fas fa-id-badge text-secondary fs-5"></i>
+                                                            @endswitch
+                                                            <h6 class="mb-0 text-primary">{{ $identification->type }}</h6>
+                                                            <span class="badge rounded-pill bg-{{ 
+                                                                $identification->status === 'active' ? 'success' : 
+                                                                ($identification->status === 'expired' ? 'danger' : 'warning') 
+                                                            }}">
+                                                                {{ Str::title($identification->status) }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                                                <i class="fas fa-ellipsis-v"></i>
+                                                            </button>
+                                                            <div class="dropdown-menu dropdown-menu-end">
+                                                                <a href="{{ route('students.identifications.edit', ['student' => $student, 'identification' => $identification]) }}" 
+                                                                   class="dropdown-item">
+                                                                    <i class="fas fa-edit text-primary me-2"></i>Edit
+                                                                </a>
+                                                                <form action="{{ route('students.identifications.destroy', ['student' => $student, 'identification' => $identification]) }}" 
+                                                                      method="POST" 
+                                                                      onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class="fas fa-trash me-2"></i>Delete
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row g-3">
+                                                        <div class="col-12">
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <i class="fas fa-hashtag text-info me-2"></i>
+                                                                <span class="text-muted">ID Number:</span>
+                                                                <span class="ms-2">{{ $identification->number }}</span>
+                                                            </div>
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <i class="fas fa-calendar-plus text-success me-2"></i>
+                                                                <span class="text-muted">Issue Date:</span>
+                                                                <span class="ms-2">{{ date('M d, Y', strtotime($identification->issue_date)) }}</span>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fas fa-calendar-times text-danger me-2"></i>
+                                                                <span class="text-muted">Expiry Date:</span>
+                                                                <span class="ms-2">{{ date('M d, Y', strtotime($identification->expiry_date)) }}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        @if($identification->issuing_authority)
+                                                            <div class="col-12">
+                                                                <div class="border-top pt-3">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <i class="fas fa-building text-primary me-2"></i>
+                                                                        <span class="text-muted">Issuing Authority:</span>
+                                                                        <span class="ms-2">{{ $identification->issuing_authority }}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+
+                                                        @if($identification->document)
+                                                            <div class="col-12">
+                                                                <div class="border-top pt-3">
+                                                                    <a href="{{ Storage::url($identification->document) }}" 
+                                                                       class="btn btn-sm btn-outline-primary" 
+                                                                       target="_blank">
+                                                                        <i class="fas fa-file-alt me-1"></i>View Document
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+
+                                                        @if($identification->notes)
+                                                            <div class="col-12">
+                                                                <div class="border-top pt-3">
+                                                                    <div class="d-flex">
+                                                                        <i class="fas fa-sticky-note text-warning me-2 mt-1"></i>
+                                                                        <p class="mb-0 text-muted">{{ $identification->notes }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+                                <p class="mb-0">No identification records found</p>
+                                <a href="{{ route('students.identifications.create', $student) }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus me-1"></i>Add First Identification
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -825,168 +977,22 @@
                         @endif
                     </div>
                 </div>
-            </div>
 
-            <!-- Documents Tab -->
-            <div class="tab-pane fade" id="documents" role="tabpanel">
-                <div class="card">
-                    <div class="card-header bg-transparent">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 fs-5">
-                                <i class="fas fa-id-card text-primary me-2"></i>Identifications
-                            </h6>
-                            <a href="{{ route('students.identifications.create', $student) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-plus me-1"></i>Add Identification
-                            </a>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        @if($student->identifications->count() > 0)
-                            <div class="row g-4">
-                                @foreach($student->identifications->sortByDesc('issue_date')->chunk(2) as $chunk)
-                                    @foreach($chunk as $identification)
-                                        <div class="col-md-6">
-                                            <div class="card border h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            @switch(strtolower($identification->type))
-                                                                @case('passport')
-                                                                    <i class="fas fa-passport text-primary fs-5"></i>
-                                                                    @break
-                                                                @case('national id')
-                                                                    <i class="fas fa-id-card text-info fs-5"></i>
-                                                                    @break
-                                                                @case('driver license')
-                                                                    <i class="fas fa-id-card-alt text-success fs-5"></i>
-                                                                    @break
-                                                                @case('birth certificate')
-                                                                    <i class="fas fa-certificate text-warning fs-5"></i>
-                                                                    @break
-                                                                @case('student id')
-                                                                    <i class="fas fa-user-graduate text-danger fs-5"></i>
-                                                                    @break
-                                                                @default
-                                                                    <i class="fas fa-id-badge text-secondary fs-5"></i>
-                                                            @endswitch
-                                                            <h6 class="mb-0 text-primary">{{ $identification->type }}</h6>
-                                                            <span class="badge rounded-pill bg-{{ 
-                                                                $identification->status === 'active' ? 'success' : 
-                                                                ($identification->status === 'expired' ? 'danger' : 'warning') 
-                                                            }}">
-                                                                {{ Str::title($identification->status) }}
-                                                            </span>
-                                                        </div>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
-                                                                <i class="fas fa-ellipsis-v"></i>
-                                                            </button>
-                                                            <div class="dropdown-menu dropdown-menu-end">
-                                                                <a href="{{ route('students.identifications.edit', ['student' => $student, 'identification' => $identification]) }}" 
-                                                                   class="dropdown-item">
-                                                                    <i class="fas fa-edit text-primary me-2"></i>Edit
-                                                                </a>
-                                                                <form action="{{ route('students.identifications.destroy', ['student' => $student, 'identification' => $identification]) }}" 
-                                                                      method="POST" 
-                                                                      onsubmit="return confirm('Are you sure you want to delete this record?');">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" class="dropdown-item text-danger">
-                                                                        <i class="fas fa-trash me-2"></i>Delete
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row g-3">
-                                                        <div class="col-12">
-                                                            <div class="d-flex align-items-center mb-2">
-                                                                <i class="fas fa-hashtag text-info me-2"></i>
-                                                                <span class="text-muted">ID Number:</span>
-                                                                <span class="ms-2">{{ $identification->number }}</span>
-                                                            </div>
-                                                            <div class="d-flex align-items-center mb-2">
-                                                                <i class="fas fa-calendar-plus text-success me-2"></i>
-                                                                <span class="text-muted">Issue Date:</span>
-                                                                <span class="ms-2">{{ date('M d, Y', strtotime($identification->issue_date)) }}</span>
-                                                            </div>
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fas fa-calendar-times text-danger me-2"></i>
-                                                                <span class="text-muted">Expiry Date:</span>
-                                                                <span class="ms-2">{{ date('M d, Y', strtotime($identification->expiry_date)) }}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        @if($identification->issuing_authority)
-                                                            <div class="col-12">
-                                                                <div class="border-top pt-3">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <i class="fas fa-building text-primary me-2"></i>
-                                                                        <span class="text-muted">Issuing Authority:</span>
-                                                                        <span class="ms-2">{{ $identification->issuing_authority }}</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-
-                                                        @if($identification->document)
-                                                            <div class="col-12">
-                                                                <div class="border-top pt-3">
-                                                                    <a href="{{ Storage::url($identification->document) }}" 
-                                                                       class="btn btn-sm btn-outline-primary" 
-                                                                       target="_blank">
-                                                                        <i class="fas fa-file-alt me-1"></i>View Document
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-
-                                                        @if($identification->notes)
-                                                            <div class="col-12">
-                                                                <div class="border-top pt-3">
-                                                                    <div class="d-flex">
-                                                                        <i class="fas fa-sticky-note text-warning me-2 mt-1"></i>
-                                                                        <p class="mb-0 text-muted">{{ $identification->notes }}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                @endforeach
-                            </div>
+                <!-- Health Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-heartbeat text-danger me-2"></i>Health Information
+                        </h6>
+                        @if(!$student->studentHealth)
+                        <a href="{{ route('students.health.create', $student) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Health Info
+                        </a>
                         @else
-                            <div class="text-center py-5 text-muted">
-                                <i class="fas fa-id-card fa-3x mb-3"></i>
-                                <p class="mb-0">No identification records found</p>
-                            </div>
+                        <a href="{{ route('students.health.edit', ['student' => $student, 'health' => $student->studentHealth]) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
                         @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Health Records Tab -->
-            <div class="tab-pane fade" id="health" role="tabpanel">
-                <div class="card">
-                    <div class="card-header bg-transparent">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 fs-5">
-                                <i class="fas fa-heartbeat text-danger me-2"></i>Health Information
-                            </h6>
-                            @if(!$student->studentHealth)
-                            <a href="{{ route('students.health.create', $student) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-plus me-1"></i>Add Health Info
-                            </a>
-                            @else
-                            <a href="{{ route('students.health.edit', ['student' => $student, 'health' => $student->studentHealth]) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-1"></i>Edit
-                            </a>
-                            @endif
-                        </div>
                     </div>
 
                     @if($student->studentHealth)
@@ -1558,70 +1564,101 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <span class="badge rounded-pill bg-{{ $enrollment->status === 'active' ? 'success' : ($enrollment->status === 'completed' ? 'info' : 'warning') }}">
-                                                        <i class="fas fa-{{ $enrollment->status === 'active' ? 'check' : ($enrollment->status === 'completed' ? 'flag-checkered' : 'clock') }}"></i>
-                                                    </span>
-                                                    <h6 class="mb-0 text-primary">{{ $enrollment->course->name }}</h6>
+                                                    <div class="bg-success rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                        <i class="fas fa-check text-white fs-5"></i>
+                                                    </div>
+                                                    <h5 class="mb-0 fw-bold">{{ $enrollment->course->name }}</h5>
                                                 </div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) }}" 
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-eye me-1"></i>View Course
-                                                    </a>
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
-                                                            <i class="fas fa-ellipsis-v"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end">
-                                                            <a href="{{ route('students.enrollments.edit', ['student' => $student, 'enrollment' => $enrollment]) }}" 
-                                                               class="dropdown-item">
-                                                                <i class="fas fa-edit text-primary me-2"></i>Edit
-                                                            </a>
-                                                            <form action="{{ route('students.enrollments.destroy', ['student' => $student, 'enrollment' => $enrollment]) }}" 
-                                                                  method="POST" 
-                                                                  onsubmit="return confirm('Are you sure you want to delete this enrollment?');">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="dropdown-item text-danger">
-                                                                    <i class="fas fa-trash me-2"></i>Delete
-                                                                </button>
-                                                            </form>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                           class="dropdown-item">
+                                                            <i class="fas fa-eye text-primary me-2"></i>View
+                                                        </a>
+                                                        <a href="{{ route('students.enrollments.edit', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                           class="dropdown-item">
+                                                            <i class="fas fa-edit text-primary me-2"></i>Edit
+                                                        </a>
+                                                        <form action="{{ route('students.enrollments.destroy', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                              method="POST" 
+                                                              onsubmit="return confirm('Are you sure you want to delete this enrollment?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="fas fa-trash me-2"></i>Delete
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-4">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-clock text-secondary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="text-muted small">Study Mode</div>
+                                                            <div class="fw-bold">{{ $enrollment->studyMode->name }}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-calendar-alt text-secondary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="text-muted small">Enrolled</div>
+                                                            <div class="fw-bold">{{ date('M d, Y', strtotime($enrollment->enrollment_date)) }}</div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <i class="fas fa-clock text-muted me-2"></i>
-                                                        <span class="text-muted">Study Mode:</span>
-                                                        <span class="ms-2">{{ $enrollment->studyMode->name }}</span>
-                                                    </div>
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <i class="fas fa-calendar text-muted me-2"></i>
-                                                        <span class="text-muted">Enrolled:</span>
-                                                        <span class="ms-2">{{ date('M d, Y', strtotime($enrollment->enrollment_date)) }}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <i class="fas fa-qrcode text-muted me-2"></i>
-                                                        <span class="text-muted">Code:</span>
-                                                        <span class="ms-2">{{ $enrollment->enrollmentCode->base_code }}</span>
-                                                    </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
                                                     <div class="d-flex align-items-center">
-                                                        <i class="fas fa-info-circle text-muted me-2"></i>
-                                                        <span class="text-muted">Status:</span>
-                                                        <span class="ms-2 badge bg-{{ 
-                                                            $enrollment->status === 'active' ? 'success' : 
-                                                            ($enrollment->status === 'completed' ? 'info' : 'warning') 
-                                                        }} px-2">
-                                                            {{ ucfirst($enrollment->status) }}
-                                                        </span>
+                                                        <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-qrcode text-secondary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="text-muted small">Code</div>
+                                                            <div class="fw-bold">{{ $enrollment->enrollmentCode->base_code ?? 'N/A' }}</div>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-info-circle text-secondary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="text-muted small">Status</div>
+                                                            <div>
+                                                                @php
+                                                                    $statusClass = $enrollment->status === 'active' ? 'bg-success' : 
+                                                                        ($enrollment->status === 'completed' ? 'bg-brand-primary' : 
+                                                                        ($enrollment->status === 'withdrawn' ? 'bg-danger' : 'bg-warning'));
+                                                                @endphp
+                                                                <span class="badge {{ $statusClass }} rounded-pill px-3 py-2">
+                                                                    {{ ucfirst($enrollment->status) }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3 text-end">
+                                                <a href="{{ route('students.enrollments.show', ['student' => $student, 'enrollment' => $enrollment]) }}" 
+                                                    class="btn btn-primary">
+                                                    <i class="fas fa-eye me-1"></i> View Course
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -1635,62 +1672,6 @@
                         <p class="mb-0">No course enrollments found for this student</p>
                     </div>
                     @endif
-                </div>
-            </div>
-
-            <!-- Attendance Tab -->
-            <div class="tab-pane fade" id="attendance" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">Attendance Records</h6>
-                        <a href="{{ route('students.attendance.create', $student) }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus me-1"></i> Add Attendance
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        @if($student->attendance->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Course</th>
-                                        <th>Notes</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($student->attendance as $record)
-                                    <tr>
-                                        <td>{{ date('d/m/Y', strtotime($record->date)) }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $record->status === 'present' ? 'success' : 'danger' }}">
-                                                {{ ucfirst($record->status) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $record->course->name ?? 'N/A' }}</td>
-                                        <td>{{ $record->notes ?? '-' }}</td>
-                                        <td>
-                                            <a href="{{ route('admin.attendance.edit', $record) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        @else
-                        <div class="text-center py-3">
-                            <div class="mb-3">
-                                <span class="fas fa-calendar-check fa-3x text-300"></span>
-                            </div>
-                            <h6 class="text-800">No Attendance Records</h6>
-                            <p class="text-500">No attendance records have been added yet.</p>
-                        </div>
-                        @endif
-                    </div>
                 </div>
             </div>
 
@@ -1750,6 +1731,15 @@
                 @endif
             </div>
 
+            <!-- Health Records Tab - Hidden -->
+            <div class="tab-pane fade" id="health" role="tabpanel" style="display: none;">
+                <!-- Health content moved to personal info tab -->
+            </div>
+
+            <!-- Attendance Tab - Hidden -->
+            <div class="tab-pane fade" id="attendance" role="tabpanel" style="display: none;">
+                <!-- Attendance content removed -->
+            </div>
 
         </div>
     </div>
@@ -1783,6 +1773,33 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tabs
+        const tabLinks = document.querySelectorAll('.tab-link');
+        
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs
+                tabLinks.forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Hide all tab content
+                const tabPanes = document.querySelectorAll('.tab-pane');
+                tabPanes.forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Show selected tab content
+                const target = this.getAttribute('href');
+                document.querySelector(target).classList.add('show', 'active');
+            });
+        });
+        
         // Initialize any plugins or interactions
     });
 

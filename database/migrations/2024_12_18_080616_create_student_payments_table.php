@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('due_date');
             $table->string('payment_method'); // cash, bank transfer, check, etc.
             $table->string('reference_number')->nullable();
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');
             $table->text('notes')->nullable();
             $table->string('slug')->unique();

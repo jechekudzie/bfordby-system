@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('enrollment_code_id');
             $table->date('enrollment_date');
             $table->enum('status', ['active', 'completed', 'withdrawn', 'repeat']);
+            $table->enum('entry_type', ['normal', 'special', 'mature', 'repeat'])->default('normal');
             $table->timestamps();
 
         

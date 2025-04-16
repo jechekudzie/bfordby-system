@@ -56,7 +56,8 @@ class StudentEnrollmentController extends Controller
             'study_mode_id' => 'required|exists:study_modes,id',
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,completed,withdrawn,repeat',
-            'enrollment_code_id' => 'required|exists:enrollment_codes,id'
+            'enrollment_code_id' => 'required|exists:enrollment_codes,id',
+            'entry_type' => 'required|in:normal,special,mature,repeat'
         ]);
 
         $enrollment = $student->enrollments()->create($validated);
@@ -192,7 +193,8 @@ class StudentEnrollmentController extends Controller
             'study_mode_id' => 'required|exists:study_modes,id',
             'enrollment_date' => 'required|date',
             'status' => 'required|in:active,completed,withdrawn,repeat',
-            'enrollment_code_id' => 'required|exists:enrollment_codes,id'
+            'enrollment_code_id' => 'required|exists:enrollment_codes,id',
+            'entry_type' => 'required|in:normal,special,mature,repeat'
         ]);
         
         $enrollment->update($validated);

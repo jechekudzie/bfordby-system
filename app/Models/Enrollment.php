@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Enrollment extends Model
 {
     //
-    protected $fillable = ['student_id', 'course_id', 'study_mode_id', 'enrollment_code_id', 'enrollment_date', 'status'];
+    protected $fillable = ['student_id', 'course_id', 'study_mode_id', 'enrollment_code_id', 'enrollment_date',
+     'status', 'end_date','entry_type'];
 
     public function student()
     {

@@ -10,36 +10,70 @@
                     <div class="row g-0">
                         <!-- Left side - Course Information -->
                         <div class="col-md-8 p-4">
-                            <div class="d-flex flex-column">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="bg-brand-primary-light rounded-circle p-2 me-3 rounded-circle-icon">
-                                        <i class="fas fa-graduation-cap text-brand-primary"></i>
+                            <div class="d-flex flex-column h-100">
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                            <i class="fas fa-check text-white fs-5"></i>
+                                        </div>
+                                        <h3 class="mb-0 fw-bold">{{ $enrollment->course->name }}</h3>
                                     </div>
-                                    <h4 class="mb-0">{{ $enrollment->course->name }}</h4>
                                 </div>
 
-                                <div class="mt-2 mb-4">
-                                    <span class="badge badge-brand-primary rounded-pill px-3 py-2">
-                                        <i class="fas fa-clock me-1"></i> {{ $enrollment->studyMode->name }}
-                                    </span>
-                                </div>
-                                
-                                <div class="row mt-3">
+                                <div class="row mt-4">
                                     <div class="col-md-6 mb-3">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-calendar-alt text-brand-primary me-2"></i>
+                                            <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-clock text-secondary"></i>
+                                            </div>
                                             <div>
-                                                <div class="text-muted small">Enrollment Date</div>
-                                                <div>{{ date('M d, Y', strtotime($enrollment->created_at)) }}</div>
+                                                <div class="text-muted small">Study Mode</div>
+                                                <div class="fw-bold">{{ $enrollment->studyMode->name }}</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <div class="d-flex align-items-center">
-                                            <i class="fas fa-hourglass-half text-brand-primary me-2"></i>
+                                            <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-calendar-alt text-secondary"></i>
+                                            </div>
                                             <div>
-                                                <div class="text-muted small">Duration</div>
-                                                <div>{{ $enrollment->course->duration ?? 'Not specified' }}</div>
+                                                <div class="text-muted small">Enrolled</div>
+                                                <div class="fw-bold">{{ date('M d, Y', strtotime($enrollment->enrollment_date)) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-qrcode text-secondary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-muted small">Code</div>
+                                                <div class="fw-bold">{{ $enrollment->enrollmentCode->base_code ?? 'N/A' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-info-circle text-secondary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-muted small">Status</div>
+                                                <div>
+                                                    @php
+                                                        $statusClass = $enrollment->status === 'active' ? 'bg-success' : 
+                                                            ($enrollment->status === 'completed' ? 'bg-brand-primary' : 
+                                                            ($enrollment->status === 'withdrawn' ? 'bg-danger' : 'bg-warning'));
+                                                    @endphp
+                                                    <span class="badge {{ $statusClass }} rounded-pill px-3 py-2">
+                                                        {{ ucfirst($enrollment->status) }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -48,45 +82,38 @@
                         </div>
                         
                         <!-- Right side - Student Information -->
-                        <div class="col-md-4 p-4 bg-brand-primary-light">
+                        <div class="col-md-4 p-4 bg-light">
                             <div class="d-flex flex-column h-100">
                                 <div class="mb-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="bg-brand-secondary-light rounded-circle p-1 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                            <i class="fas fa-user text-brand-primary"></i>
+                                    <h5 class="mb-3 text-muted fw-bold"><i class="fas fa-user me-2"></i>Student Information</h5>
+                                    
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-secondary text-white rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <span class="fw-bold fs-5">{{ strtoupper(substr($enrollment->student->first_name, 0, 1)) }}{{ strtoupper(substr($enrollment->student->last_name, 0, 1)) }}</span>
                                         </div>
-                                        <span class="text-uppercase text-muted small fw-bold">Student Information</span>
+                                        <div>
+                                            <h5 class="mb-0 fw-bold">{{ $enrollment->student->first_name }} {{ $enrollment->student->last_name }}</h5>
+                                            <p class="mb-0 text-muted">ID: {{ $enrollment->student->id }}</p>
+                                        </div>
                                     </div>
                                     
-                                    <h4 class="mb-4">{{ $enrollment->student->first_name }} {{ $enrollment->student->last_name }}</h4>
-                                    
                                     <div class="student-details">
-                                        @if($enrollment->enrollmentCode)
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-hashtag text-muted me-2"></i>
-                                                <span class="text-muted">Enrollment Code: <span class="text-dark">{{ $enrollment->enrollmentCode->base_code }}</span></span>
-                                            </div>
-                                        @endif
                                         <div class="d-flex align-items-center mb-3">
-                                            <i class="fas fa-id-card text-muted me-2"></i>
-                                            <span class="text-muted">Student ID: <span class="text-dark">{{ $enrollment->student->id }}</span></span>
+                                            <i class="fas fa-door-open text-muted me-2"></i>
+                                            <span class="text-muted">Entry Type: <span class="fw-semibold text-dark">{{ ucfirst($enrollment->entry_type) }}</span></span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex align-items-center justify-content-between mt-auto">
-                                    @php
-                                        $statusClass = $enrollment->status === 'active' || $enrollment->status === 'completed' 
-                                            ? 'badge-brand-primary' 
-                                            : ($enrollment->status === 'withdrawn' ? 'bg-danger' : 'badge-brand-secondary');
-                                    @endphp
-                                    <span class="badge {{ $statusClass }} rounded-pill px-3 py-2">
-                                        <i class="fas fa-circle me-1 small"></i>{{ ucfirst($enrollment->status) }}
-                                    </span>
-                                    <a href="{{ route('students.show', $enrollment->student) }}" 
-                                       class="btn btn-sm px-3 border border-brand-primary text-brand-primary rounded-pill">
-                                        <i class="fas fa-arrow-left me-1"></i>Back
-                                    </a>
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{{ route('students.show', $enrollment->student) }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left me-1"></i>Back to Student
+                                        </a>
+                                        <a href="{{ route('students.enrollments.edit', [$enrollment->student, $enrollment]) }}" class="btn btn-primary">
+                                            <i class="fas fa-edit me-1"></i>Edit
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
